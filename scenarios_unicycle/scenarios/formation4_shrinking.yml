@@ -1,0 +1,70 @@
+---
+# Order always is Scenario → Control → Setup
+scenario:
+  obstacles:
+  # Each line as an obstacle
+  - [[1, 0, 0], [2, 0.3, 0], [3, 0, 0], [2, -0.3, 0], [1, 0, 0]]
+  formations:
+    structs:
+    # Each line as the Cartesian coordinate w.r.t. the its formation center
+    - [0.5, 0.5, 0.0]
+    - [-0.5, 0.5, 0.0]
+    - [-0.5, -0.5, 0.0]
+    - [0.5, -0.5, 0.0]
+    hulls:
+    # Each array as a hull matrix of the formation
+    # -1 and 1 indicate the previous and following hull neighbor of each robot
+    - [[0, 1, 0, -1],
+       [-1, 0, 1, 0],
+       [0, -1, 0, 1],
+       [-1, 0, 1, 0]]
+    links:
+    # Each array as a Adjacency matrix of each formation
+    # Positive value indicates the length of the link to each neighbor referring with form_scaling
+    - [[0, 0.71, 1.0, 0.71],
+       [0.71, 0, 0.71, 0],
+       [1.0, 0.71, 0, 0.71],
+       [0.71, 0, 0.71, 0]]
+    # Each element as formation's scaling, major and minor lengths of the ellipse
+    form_scaling: [1.0]
+    major_l: [1.0]
+    minor_l: [1.0]
+  positions:
+    initial_positions:
+    # Each line as the initial position[3] & orientation[1] of each formation center
+    - [0.0, 0.0, 0.0, 0.0]
+    waypoints:
+    # Each line as a set of waypoints (position[3] & orientation[1]) of each formation
+    - [[5.0, 0.0, 0.0, 0.0]]
+    wp_switch_radius: 0.1
+control:
+  features:
+    use_unicycle: true
+    USE_WAYPOINTS: true
+    USECBF_LIDAR: true
+    USECBF_LIDAR_SHARING: false
+    USECBF_FORMATION: true
+  parameters:
+    d_obs: 0.2
+    robot_offset: 0.18
+    speed_limit: 0.15
+    initial_eps: 0.1
+    eps_gain: 0.8
+    eps_weight: 0.01
+    sensor_resolution: 360
+    default_range: 1.0
+    kappa: 0.15
+    max_form_epsilon: 0.5
+    FIELD_X: [-2, 6]
+    FIELD_Y: [-2, 2]
+setup:
+  Ts: 0.02
+  tmax: 120
+  save_animate: false
+  save_data: false
+  plot_saved_data: false
+  timeseries_window: 1
+  eps_visualization: false
+  DETECT_OTHER_ROBOTS: true
+  bound_vertices: 8
+  robot_rad: 0.1
