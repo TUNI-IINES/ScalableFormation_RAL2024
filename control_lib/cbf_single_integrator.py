@@ -2,7 +2,7 @@ import numpy as np
 import cvxopt
 
 
-class cbf_si():
+class cbf_si:
     """
     Control Barrier Function for Single Integrator
     """
