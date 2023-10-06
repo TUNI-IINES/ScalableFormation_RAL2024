@@ -67,8 +67,8 @@ class SceneSetup:
     eps_gain = 1.  # for achieving eps → 0
     eps_weight = 1.  # priority in optimizing function
     initial_eps = 0.5  # ratio
-    gamma_staticObs = 2000
-    gamma_form = 2000
+    gamma_staticObs = 10
+    gamma_form = 10
     gamma_ellipsAv = 0.2
     default_range_data = np.zeros((0, 0))
     sensor_resolution = 360  # LiDAR resolution, shall not change

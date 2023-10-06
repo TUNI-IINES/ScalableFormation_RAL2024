@@ -3,8 +3,7 @@
 scenario:
   obstacles:
   # Each line as an obstacle
-  - [[1.0, 1.0, 0.0], [4.0, 1.0, 0.0], [3.0, 0.7, 0.0], [2.0, 0.7, 0.0], [1.0, 1.0, 0.0]]
-  - [[1.0, -1.0, 0.0], [4.0, -1.0, 0.0], [3.0, -0.7, 0.0], [2.0, -0.7, 0.0], [1.0, -1.0, 0.0]]
+  - [[1, 0, 0], [2, 0.4, 0], [3, 0, 0], [2, -0.3, 0], [1, 0, 0]]
   formations:
     structs:
     # Each line as the Cartesian coordinate w.r.t. the its formation center
@@ -23,9 +22,9 @@ scenario:
     # Each array as a Adjacency matrix of each formation
     # Positive value indicates the length of the link to each neighbor referring with form_scaling
     - [[0, 0.707, 1.0, 0.707],
-       [0.707, 0, 0.707, 1.0],
+       [0.707, 0, 0.707, 0],
        [1.0, 0.707, 0, 0.707],
-       [0.707, 1.0, 0.707, 0]]
+       [0.707, 0, 0.707, 0]]
     # Each element as formation's scaling, major and minor lengths of the ellipse
     form_scaling: [1.4142]
     major_l: [1.0]

@@ -398,7 +398,6 @@ class cbf_si:
 
         # Lower epsilon
         # h = ε_i ≥ 0
-        # h = ε_i ≥ 0
         h_eps_floor = self_eps
         self.__set_constraint(-common_vect, gamma * np.power(h_eps_floor, power).reshape((1, 1)))
 

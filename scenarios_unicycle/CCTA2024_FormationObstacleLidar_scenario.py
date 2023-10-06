@@ -137,7 +137,7 @@ def import_scenario():
     [exec(f'SceneSetup.{k} = {v}') for data in control.values() for k, v in data.items()]
     SceneSetup.robot_num = len(scenario['formations']['structs'])
     # TODO: this should not be like this
-    SceneSetup.robot_color = [np.random.random() for _ in range(SceneSetup.robot_num)]
+    SceneSetup.robot_color = [f'{np.random.random():.3f}' for _ in range(SceneSetup.robot_num)]
     SceneSetup.default_range_data = np.ones((SceneSetup.robot_num,
                                              SceneSetup.sensor_resolution)) * SceneSetup.default_range
 
@@ -194,22 +194,22 @@ def import_scenario():
     NebolabSetup.FIELD_X = SceneSetup.FIELD_X
     NebolabSetup.FIELD_Y = SceneSetup.FIELD_Y
 
-    print('form_wp\n', SceneSetup.form_waypoints)
-    print('form_wp_orient\n', SceneSetup.form_wp_orient)
-    print('init_pos\n', SceneSetup.init_pos)
-    print('goal_pos\n', SceneSetup.goal_pos)
-    print('init_theta\n', SceneSetup.init_theta)
-    print('major_l\n', SceneSetup.major_l)
-    print('minor_l\n', SceneSetup.minor_l)
-    print('wp_switch_radius\n', SceneSetup.wp_switch_radius)
-    print('struct\n', SceneSetup.struct)
-    print('form_A\n', SceneSetup.form_A)
-    print('form_A_edges\n', SceneSetup.form_A_edges)
-    print('form_leader_id\n', SceneSetup.form_leader_id)
-    print('form_leader_offset\n', SceneSetup.form_leader_offset)
-    print('form_size\n', SceneSetup.form_size)
-    print('form_id\n', SceneSetup.form_id)
-    print('hull\n', SceneSetup.hull)
+    # print('form_wp\n', SceneSetup.form_waypoints)
+    # print('form_wp_orient\n', SceneSetup.form_wp_orient)
+    # print('init_pos\n', SceneSetup.init_pos)
+    # print('goal_pos\n', SceneSetup.goal_pos)
+    # print('init_theta\n', SceneSetup.init_theta)
+    # print('major_l\n', SceneSetup.major_l)
+    # print('minor_l\n', SceneSetup.minor_l)
+    # print('wp_switch_radius\n', SceneSetup.wp_switch_radius)
+    # print('struct\n', SceneSetup.struct)
+    # print('form_A\n', SceneSetup.form_A)
+    # print('form_A_edges\n', SceneSetup.form_A_edges)
+    # print('form_leader_id\n', SceneSetup.form_leader_id)
+    # print('form_leader_offset\n', SceneSetup.form_leader_offset)
+    # print('form_size\n', SceneSetup.form_size)
+    # print('form_id\n', SceneSetup.form_id)
+    # print('hull\n', SceneSetup.hull)
 
 
     # Modify SimSetup
@@ -331,7 +331,7 @@ class SimulationCanvas:
                     self.log.save_to_pkl(SimSetup.sim_fdata_vis)
                     # TODO: plot data further from saved pickle
                     if SimSetup.plot_saved_data:
-                        from scenarios_unicycle.pickleplot import scenario_pkl_plot
+                        from pickleplot import scenario_pkl_plot
                         scenario_pkl_plot()
                 print(f"Stopping the simulation, tmax reached: {self.__cur_time:.2f} s")
                 # if not SimSetup.save_animate: exit() # force exit
