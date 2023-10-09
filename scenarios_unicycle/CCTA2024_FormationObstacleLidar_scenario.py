@@ -16,7 +16,7 @@ from simulator.detect_obstacle import DetectObstacle
 # -----------------------------------------------------------------------
 
 def import_scenario():
-    with open('scenarios_unicycle/scenarios/formation4_shrinking.yml', 'r') as file:
+    with open('scenarios_unicycle/scenarios/formation4_enlarging.yml', 'r') as file:
         import yaml
         scenario, control, setup = yaml.safe_load(file).values()
 
@@ -127,7 +127,7 @@ class SimSetup:
     now = datetime.now()
     dt_string = now.strftime("%Y%m%d_%H%M%S")
     desc = "testVis"
-    # desc = ""
+    desc = "enlarging"
     sim_defname = f'animation_result/{dt_string}_{desc}/sim2D_FormationObstacleLidar'
     sim_fname_output = r'' + sim_defname + '.gif'
     sim_trajTail = None  # Show all trajectory
