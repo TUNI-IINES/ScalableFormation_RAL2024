@@ -94,6 +94,7 @@ class Controller:
         Initialize Controller
         """
         # self.cbf = [cbf_si(neighbors=SceneSetup.form_A_edges[i]) for i in range(SceneSetup.robot_num)]
+        print('SceneSetup.form_A_eps', SceneSetup.form_A_eps)
         self.cbf = [cbf_si(neighbor_eps=SceneSetup.form_A_eps[i]) for i in range(SceneSetup.robot_num)]
 
     def compute_control(self, feedback, computed_control):
@@ -140,31 +141,6 @@ class Controller:
                     # store h value
                     computed_control.save_monitored_info(f"h_staticobs_{i}_{idx}", h)
 
-            # Static Elliptical Robot-Formation Avoidance
-            if SceneSetup.USECBF_ELLIPSEAV:
-                for idx in range(SceneSetup.form_num):
-                    if (form_id := SceneSetup.form_id[i]) != idx:
-                        form_pos, form_th = feedback.get_form_i_state(idx)
-                        h = self.cbf[i].add_avoid_static_ellipse(current_q, form_pos, form_th,
-                                                                 SceneSetup.major_l[form_id],
-                                                                 SceneSetup.minor_l[form_id],
-                                                                 gamma=SceneSetup.gamma_ellipsAv, power=3)
-                        # store h value
-                        computed_control.save_monitored_info(f"h_ellipseav_{i}_{idx}", 1)
-
-            # Static Circular Formation-Formation Avoidance
-            if SceneSetup.USECBF_STATIC_FF_CIRCLE:
-                for idx in range(SceneSetup.form_num):
-                    if (form_id := SceneSetup.form_id[i]) != idx:
-                        form_pos, form_th = feedback.get_form_i_state(idx)
-                        current_form_pos, _ = feedback.get_form_i_state(form_id)
-                        h = self.cbf[i].add_avoid_static_ff_circle(current_form_pos, form_pos,
-                                                                   feedback.get_form_i_radius(form_id),
-                                                                   feedback.get_form_i_radius(idx),
-                                                                   np.count_nonzero(SceneSetup.form_id == idx),
-                                                                   gamma=SceneSetup.gamma_ellipsAv, power=3)
-                        computed_control.save_monitored_info(f"h_static_ffc_{i}_{idx}", h)
-
             # Formation Maintenance
             if SceneSetup.USECBF_FORMATION:
                 for j in self.__inNeigh[i]:
@@ -173,12 +149,8 @@ class Controller:
                     if SceneSetup.use_unicycle:
                         j_q = feedback.get_lahead_i_pos(j)
 
-                    # h_fml, h_fmu, h_eps_floor, h_eps_ceil = self.cbf[i].add_maintain_distance_with_distinct_epsilon(
-                    #     current_q, j_q, SceneSetup.form_A[i, j], SceneSetup.robot_offset * 2.5, SceneSetup.max_form_epsilon, i_eps[j], j_eps[i], j,
-                    #     gamma=10, power=3)
-
                     h_fml, h_fmu, h_eps_floor, h_eps_ceil = self.cbf[i].add_maintain_distance_with_distinct_epsilon(
-                        current_q, j_q, SceneSetup.form_A[i, j], SceneSetup.max_form_epsilon, i_eps[j], j_eps[i], j,
+                        current_q, j_q, SceneSetup.form_A[i, j], SceneSetup.max_form_epsilon[i][j], i_eps[j], j_eps[i], j,
                         gamma=10, power=3)
 
                     # store h value
@@ -195,42 +167,11 @@ class Controller:
                 range_points = feedback.get_robot_i_detected_pos(i)  # [(obs_x, obs_y, 0)]
                 detected_obs_points = range_points[range_data < 0.99 * SceneSetup.default_range]  # filtered
 
-                # TODO: make this part more "reliable"
-                # Find index of hull neighbors
-                a = np.where(SceneSetup.hull[i, :] < 0)[0][0]
-                b_arr = np.where(SceneSetup.hull[i, :] > 0)[0]
-                b = b_arr[0] if len(b_arr) > 0 else a + 0
-
-                q_a = feedback.get_lahead_i_pos(a)
-                q_b = feedback.get_lahead_i_pos(b)
-
-                if SceneSetup.USECBF_LIDAR_SHARING:
-                    obs_a = feedback.get_shared_obs(a, i)
-                    obs_b = feedback.get_shared_obs(b, i)
-
-                    min_h, share_to_a, share_to_b = \
-                        self.cbf[i].add_avoid_lidar_detected_obs_formation(
-                            detected_obs_points, current_q, q_a, q_b,
-                            SceneSetup.kappa, SceneSetup.d_obs, SceneSetup.robot_offset,
-                            gamma=SceneSetup.gamma_staticObs,
-                            shared_obs_a=obs_a, shared_obs_b=obs_b
-                        )
-
-                    # share the obstacle
-                    feedback.set_shared_obs(i, a, share_to_a)
-                    feedback.set_shared_obs(i, b, share_to_b)
-
-                else:
-                    # min_h = self.cbf[i].add_avoid_lidar_detected_obs_individual(
-                    #         detected_obs_points, current_q, q_a, q_b,
-                    #         SceneSetup.kappa, SceneSetup.d_obs, SceneSetup.robot_offset,
-                    #         gamma=SceneSetup.gamma_staticObs
-                    # )
-                    min_h = self.cbf[i].add_avoid_lidar_detected_obs(
-                            detected_obs_points, current_q,
-                            SceneSetup.kappa, SceneSetup.d_obs,
-                            gamma=SceneSetup.gamma_staticObs
-                    )
+                min_h = self.cbf[i].add_avoid_lidar_detected_obs(
+                        detected_obs_points, current_q,
+                        SceneSetup.kappa, SceneSetup.d_obs,
+                        gamma=SceneSetup.gamma_staticObs
+                )
 
                 # store h value
                 computed_control.save_monitored_info(f"h_staticobs_{i}", min_h)
@@ -248,7 +189,6 @@ class Controller:
             u, v = self.cbf[i].compute_safe_controller(u_nom, -SceneSetup.eps_gain * i_eps,
                                                        weight=SceneSetup.eps_weight)
 
-            # TODO: Save to feedback instead of Control output
             # Store command
             # ------------------------------------------------
             computed_control.set_i_vel_xy(i, u[:2])
@@ -279,16 +219,6 @@ class ControlOutput:
         self.__all_velocity_input_xyz = np.zeros([SceneSetup.robot_num, 3])
         self.__all_eps = SceneSetup.form_A_eps.copy()
         self.reset_monitor()
-
-        # TODO WIDHI:
-        # - And also, please make the update of the epsilon value exclusively in cbf_si.
-        #   I suggest we add a function in cbf_si that receive the time sampling (or the difference of time between the last computation)
-        #   You can save the resulting value of v into self.v (which is an array)
-        #   for example in cbf_si
-        #        def update_additional_state(self, Ts): self.eps = self.v * Ts
-        #   Then, somewhere in this file can just call
-        #       self.cbf[i].update_additional_state(Ts := 0.02)
-
 
     def get_all_vel_xy(self):
         """
@@ -408,9 +338,6 @@ class FeedbackInformation:
         self.__all_robot_epsilon_hist = self.__all_robot_epsilon.copy().reshape(SceneSetup.form_A_eps.shape[0],
                                                                                 SceneSetup.form_A_eps.shape[1], 1)
 
-
-
-    # TODO: make it dynamic based on SceneSetup.form_A
     @staticmethod
     def __compute_ellipse_formation(form_robots_pos, leader_pos, leader_offset_rad):
         """
@@ -429,51 +356,6 @@ class FeedbackInformation:
         vector = leader_pos - cent  # robot 0 is leader group 1
         theta = np.arctan2(vector[1], vector[0]) + leader_offset_rad  # no offset for now
         return cent, theta
-
-    def __update_circle_radius(self):
-        """
-        Update the circle radius
-        """
-        for form_id in range(SceneSetup.form_num):
-            max_dist = -float('inf')
-            for idx in range(SceneSetup.robot_num):
-                if form_id == SceneSetup.form_id[idx]:
-                    dist = np.linalg.norm(self.__all_lahead_pos[idx, :2] - self.__all_form_centroid[form_id, :2])
-                    max_dist = max(dist, max_dist)
-            self.__all_form_radius[form_id, :] = max_dist
-
-    def get_form_i_radius(self, i):
-        """
-        __all_form_radius @ i-th row getter
-
-        :param i: integer, i-th formation in simulation
-        :return: scalar value, radius of i-th formation
-        """
-        return self.__all_form_radius[i, :]
-
-    def get_detected_obs(self, i, j):
-        """
-        __shared_detected_pos @ j,i-th cell getter
-
-        :param i: integer, the original robot's index
-        :param j: integer, the neighbor's index
-        :return: list of 2x1 vector, list of detected obstacle in shared region
-        """
-        try:
-            return self.__shared_detected_pos[f'{i}_{j}'][:]
-        except KeyError:
-            # To tackle the first round of simulation
-            return list()
-
-    def set_detected_obs(self, i, j, arr_obstacle):
-        """
-        __shared_detected_pos @ i,j-th cell setter
-
-        :param arr_obstacle: list of 2x1 vector, list of detected obstacle in shared region
-        :param i: integer, the original robot's index
-        :param j: integer, the neighbor's index
-        """
-        self.__shared_detected_pos[f'{i}_{j}'] = arr_obstacle[:]
 
     def set_feedback(self, all_robots_pos, all_robots_theta, all_robots_eps=None):
         """

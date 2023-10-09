@@ -39,6 +39,7 @@ def import_scenario():
     SceneSetup.form_size = [len(form) for form in scenario['formations']['hulls']]
     SceneSetup.form_id = np.array([idx for idx in range(SceneSetup.form_num)
                                    for _ in range(SceneSetup.form_size[idx])])  # Identifier for each group
+    SceneSetup.max_form_epsilon = block_diag(*[np.array(mfe) for mfe in scenario['formations']['max_form_epsilon']])
 
     # Define the leader ID in each formation and the initial offset to major axis
     SceneSetup.struct = np.array([np.array(scenario['formations']['structs'][idx]) * form_l[SceneSetup.form_id[idx]]
@@ -52,7 +53,8 @@ def import_scenario():
                                               for idx in SceneSetup.form_leader_id])  # np.array([0., 0.])
 
     # print(SceneSetup.struct)
-    SceneSetup.form_A_eps = np.where(SceneSetup.form_A > 0, SceneSetup.initial_eps * SceneSetup.max_form_epsilon, 0)
+    # SceneSetup.form_A_eps = np.where(SceneSetup.form_A > 0, SceneSetup.initial_eps * SceneSetup.max_form_epsilon, 0)
+    SceneSetup.form_A_eps = SceneSetup.initial_eps * SceneSetup.max_form_epsilon
     SceneSetup.form_A_edges = np.count_nonzero(SceneSetup.form_A_eps, axis=1)
 
     # Working with Waypoints
@@ -102,6 +104,8 @@ def import_scenario():
     print('form_size\n', SceneSetup.form_size)
     print('form_id\n', SceneSetup.form_id)
     print('hull\n', SceneSetup.hull)
+    print('max_form_epsilon\n', SceneSetup.max_form_epsilon)
+    print('d_obs\n', SceneSetup.d_obs)
 
     # Modify SimSetup
     [exec(f'SimSetup.{k} = {v}') for k, v in setup.items()]
@@ -123,7 +127,7 @@ class SimSetup:
     now = datetime.now()
     dt_string = now.strftime("%Y%m%d_%H%M%S")
     desc = "testVis"
-    desc = ""
+    # desc = ""
     sim_defname = f'animation_result/{dt_string}_{desc}/sim2D_FormationObstacleLidar'
     sim_fname_output = r'' + sim_defname + '.gif'
     sim_trajTail = None  # Show all trajectory
@@ -131,13 +135,6 @@ class SimSetup:
 
     timeseries_window = 1  # in seconds, for the time series data
     eps_visualization = True
-    # TODO WIDHI: In the journal version we will not consider scalable epsilon.
-    # So, I editted some codes to wrap everything related to epsilon within 
-    #   if SimSetup.eps_visualization:
-    # It should be handled better. Please double check my edit.
-    # AND, any update on epsilon should be internally in cbf_si
-    # Here, it should only be related to plotting.
-
     DETECT_OTHER_ROBOTS = True
     robot_angle_bound = np.append(np.linspace(0., 2 * np.pi, num=8, endpoint=False), 0) + np.pi / 8
     robot_rad = 0.1
@@ -271,13 +268,13 @@ class SimulationCanvas:
             for j in range(SceneSetup.robot_num):
                 if (i < j) and (SceneSetup.form_A[i, j] > 0):
                     self.__drawn_comm_lines[str(i) + '_' + str(j)], = ax_2D.plot([-i, -i], [j, j],
-                                                                                 color='k', linewidth=0.5)
+                                                                                 color='k', linewidth=0.5 / SceneSetup.max_form_epsilon[i][j])
 
         # Display sensing data
         self.__pl_sens = dict()
         __colorList = plt.rcParams['axes.prop_cycle'].by_key()['color']
         for i in range(SceneSetup.robot_num):
-            self.__pl_sens[i], = ax_2D.plot(0, 0, '.', color=__colorList[i])
+            self.__pl_sens[i], = ax_2D.plot(0, 0, '.', color=__colorList[i], markersize=0.25)
 
         # ADDITIONAL PLOT
         # ------------------------------------------------------------------------------------
@@ -299,20 +296,22 @@ class SimulationCanvas:
         # Draw the specified band
         array_req_dist = np.unique(SceneSetup.form_A)
         array_req_dist = np.delete(array_req_dist, 0)
+        array_max_eps = np.unique(SceneSetup.max_form_epsilon)
+        array_max_eps = np.delete(array_max_eps, 0)
         self.__prev_fill = list()
 
         for idx, dist in enumerate(array_req_dist):
             if idx == 0:  # only put 1 label
-                self.__ax_dist.fill_between([0, SimSetup.tmax], [dist - SceneSetup.max_form_epsilon] * 2,
-                                            [dist + SceneSetup.max_form_epsilon] * 2,
+                self.__ax_dist.fill_between([0, SimSetup.tmax], [dist - array_max_eps[idx]] * 2,
+                                            [dist + array_max_eps[idx]] * 2,
                                             alpha=0.12, color='k', linewidth=0, label='specified distance')
             else:
-                self.__ax_dist.fill_between([0, SimSetup.tmax], [dist - SceneSetup.max_form_epsilon] * 2,
-                                            [dist + SceneSetup.max_form_epsilon] * 2,
+                self.__ax_dist.fill_between([0, SimSetup.tmax], [dist - array_max_eps[idx]] * 2,
+                                            [dist + array_max_eps[idx]] * 2,
                                             alpha=0.12, color='k', linewidth=0)
         # set y-axis
-        self.__ax_dist.set(ylim=(min(array_req_dist) - SceneSetup.max_form_epsilon - 0.1,
-                                 max(array_req_dist) + SceneSetup.max_form_epsilon + 0.1))
+        self.__ax_dist.set(ylim=(min(array_req_dist) - max(array_max_eps) - 0.1,
+                                 max(array_req_dist) + max(array_max_eps) + 0.1))
         self.__ax_dist.grid(True)
         self.__ax_dist.legend(loc=(0.65, 0.18), prop={'size': 6})
 
