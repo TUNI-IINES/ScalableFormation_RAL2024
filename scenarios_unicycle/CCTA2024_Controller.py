@@ -173,6 +173,10 @@ class Controller:
                     if SceneSetup.use_unicycle:
                         j_q = feedback.get_lahead_i_pos(j)
 
+                    # h_fml, h_fmu, h_eps_floor, h_eps_ceil = self.cbf[i].add_maintain_distance_with_distinct_epsilon(
+                    #     current_q, j_q, SceneSetup.form_A[i, j], SceneSetup.robot_offset * 2.5, SceneSetup.max_form_epsilon, i_eps[j], j_eps[i], j,
+                    #     gamma=10, power=3)
+
                     h_fml, h_fmu, h_eps_floor, h_eps_ceil = self.cbf[i].add_maintain_distance_with_distinct_epsilon(
                         current_q, j_q, SceneSetup.form_A[i, j], SceneSetup.max_form_epsilon, i_eps[j], j_eps[i], j,
                         gamma=10, power=3)
@@ -190,7 +194,6 @@ class Controller:
                 range_data = feedback.get_robot_i_range_data(i)  # [(0 → 1)]
                 range_points = feedback.get_robot_i_detected_pos(i)  # [(obs_x, obs_y, 0)]
                 detected_obs_points = range_points[range_data < 0.99 * SceneSetup.default_range]  # filtered
-
 
                 # TODO: make this part more "reliable"
                 # Find index of hull neighbors
@@ -218,9 +221,14 @@ class Controller:
                     feedback.set_shared_obs(i, b, share_to_b)
 
                 else:
-                    min_h = self.cbf[i].add_avoid_lidar_detected_obs_individual(
-                            detected_obs_points, current_q, q_a, q_b,
-                            SceneSetup.kappa, SceneSetup.d_obs, SceneSetup.robot_offset,
+                    # min_h = self.cbf[i].add_avoid_lidar_detected_obs_individual(
+                    #         detected_obs_points, current_q, q_a, q_b,
+                    #         SceneSetup.kappa, SceneSetup.d_obs, SceneSetup.robot_offset,
+                    #         gamma=SceneSetup.gamma_staticObs
+                    # )
+                    min_h = self.cbf[i].add_avoid_lidar_detected_obs(
+                            detected_obs_points, current_q,
+                            SceneSetup.kappa, SceneSetup.d_obs,
                             gamma=SceneSetup.gamma_staticObs
                     )
 
@@ -504,6 +512,7 @@ class FeedbackInformation:
         :param all_range_data: NxMx2 matrix, sensing data package of N robots with M resolution
         """
         self.__all_range_data = all_range_data.copy()
+        # print('all_range_data\n', all_range_data)
         # update the detected position for each robot
         for i in range(all_range_data.shape[0]):
             # Calculate the angle of LiDAR ray in radian

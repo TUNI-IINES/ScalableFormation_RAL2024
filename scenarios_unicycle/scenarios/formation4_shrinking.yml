@@ -3,8 +3,8 @@
 scenario:
   obstacles:
   # Each line as an obstacle
-  - [[1.0, 1.0, 0.0], [4.0, 1.0, 0.0], [3.0, 0.7, 0.0], [2.0, 0.7, 0.0], [1.0, 1.0, 0.0]]
-  - [[1.0, -1.0, 0.0], [4.0, -1.0, 0.0], [3.0, -0.7, 0.0], [2.0, -0.7, 0.0], [1.0, -1.0, 0.0]]
+  - [[1.0, 1.0, 0.0], [4.0, 1.0, 0.0], [3.0, 0.65, 0.0], [2.0, 0.65, 0.0], [1.0, 1.0, 0.0]]
+  - [[1.0, -1.0, 0.0], [4.0, -1.0, 0.0], [3.0, -0.65, 0.0], [2.0, -0.65, 0.0], [1.0, -1.0, 0.0]]
   formations:
     structs:
     # Each line as the Cartesian coordinate w.r.t. the its formation center
@@ -18,7 +18,7 @@ scenario:
     - [[0, 1, 0, -1],
        [-1, 0, 1, 0],
        [0, -1, 0, 1],
-       [-1, 0, 1, 0]]
+       [1, 0, -1, 0]]
     links:
     # Each array as a Adjacency matrix of each formation
     # Positive value indicates the length of the link to each neighbor referring with form_scaling
@@ -46,21 +46,22 @@ control:
     USECBF_LIDAR_SHARING: false
     USECBF_FORMATION: true
   parameters:
-    d_obs: 0.2
-    robot_offset: 0.18
+    d_obs: 0.1
+    robot_offset: 0.0
     speed_limit: 0.15
     initial_eps: 0.5
     eps_gain: 0.7
-    eps_weight: 0.1
+    eps_weight: 0.01
     sensor_resolution: 360
     default_range: 1.0
-    kappa: 0.15
+    kappa: 0.1
     max_form_epsilon: 1.0
+    gamma_staticObs: 1
     FIELD_X: [-2, 6]
     FIELD_Y: [-2, 2]
 setup:
   Ts: 0.02
-  tmax: 40
+  tmax: 120
   save_animate: true
   save_data: true
   plot_saved_data: true

@@ -14,116 +14,6 @@ from simulator.detect_obstacle import DetectObstacle
 
 # GENERAL PARAM AND COMPUTATION FOR THIS SPECIFIC SCENARIO (Both SIM and EXP)
 # -----------------------------------------------------------------------
-def adjust_SceneSetup_FormationObstacle():
-    # The selected scenario to run
-    # 1. CCTA2022 1 formation with 4 robots avoiding obstacles
-
-    # Define one formation
-    cform_init = np.array([0, 0, 0])
-    cform_goal = np.array([5, 0, 0])
-    form_w = 1  # width of rectangle formation
-    form_h = 1  # height of rectangle formation
-    form_d = np.sqrt(np.power(form_w, 2) + np.power(form_h, 2))  # Diagonal of rectangle
-
-    # BELOW REPLACES THE ORIGINAL VARIABLES IN SceneSetup CLASS
-    # ---------------------------------------------------------------------
-    SceneSetup.robot_num = 4
-    SceneSetup.robot_color = ["red", "blue", "green", "orange"]
-    # Set the static obstacles
-    # SceneSetup.static_obstacles = [
-    #     np.array([[-.5, .5, 0], [.5, .5, 0], [.5, 4., 0], [-.5, 4., 0], [-.5, .5, 0]]),
-    #     np.array([[-.5, -3., 0], [.5, -3., 0], [.5, -.9, 0], [-.5, -.9, 0], [-.5, -3., 0]])
-    # ]
-    SceneSetup.static_obstacles = [
-        np.array([[2, 0, 0], [3, .4, 0], [4, 0, 0], [3, -0.4, 0], [2, 0, 0]]),
-        # np.array([[-1, -1.5, 0], [5, -1.5, 0], [3, -0.6, 0], [1.5, -0.6, 0], [-1, -1.5, 0]]),
-        # np.array([[-1, 1.5, 0], [5, 1.5, 0], [3, 0.6, 0], [1.5, 0.6, 0], [-1, 1.5, 0]])
-    ]
-
-    # Default values for sensing data --> assume with the largest possible number with 1 deg resolution
-    SceneSetup.sensor_resolution = 360
-    SceneSetup.default_range = 1
-    SceneSetup.default_range_data = np.ones((SceneSetup.robot_num, SceneSetup.sensor_resolution)) * SceneSetup.default_range
-    SceneSetup.kappa = 0.15
-
-    SceneSetup.struct = np.array([
-        [ form_h / 2,  form_w / 2, 0],
-        [-form_h / 2,  form_w / 2, 0],
-        [-form_h / 2, -form_w / 2, 0],
-        [ form_h / 2, -form_w / 2, 0] ])
-
-    # Set initial formation position --> Order: red, blue, green, orange
-    # SceneSetup.init_pos = np.array([
-    #     cform_init + np.array([form_w / 2, -form_h / 2, 0]),
-    #     cform_init + np.array([form_w / 2, form_h / 2, 0]),
-    #     cform_init + np.array([-form_w / 2, form_h / 2, 0]),
-    #     cform_init + np.array([-form_w / 2, -form_h / 2, 0]), ])
-    SceneSetup.init_pos = np.array([
-        cform_init + np.array([form_h / 2, form_w / 2, 0]),
-        cform_init + np.array([-form_h / 2, form_w / 2, 0]),
-        cform_init + np.array([-form_h / 2, -form_w / 2, 0]),
-        cform_init + np.array([form_h / 2, -form_w / 2, 0]), ])
-    SceneSetup.init_theta = np.array([0, 0, 0, 0])
-    # Set desired formation position --> rotated -90deg in final configuration
-    # SceneSetup.goal_pos = np.array([
-    #     cform_goal + np.array([-form_h / 2, -form_w / 2, 0]),
-    #     cform_goal + np.array([form_h / 2, -form_w / 2, 0]),
-    #     cform_goal + np.array([form_h / 2, form_w / 2, 0]),
-    #     cform_goal + np.array([-form_h / 2, form_w / 2, 0]), ])
-    SceneSetup.goal_pos = np.array([
-        cform_goal + np.array([form_w / 2, form_h / 2, 0]),
-        cform_goal + np.array([-form_w / 2, form_h / 2, 0]),
-        cform_goal + np.array([-form_w / 2, -form_h / 2, 0]),
-        cform_goal + np.array([form_w / 2, -form_h / 2, 0]), ])
-
-    # Here we assume any final value is OK
-    # distance to keep between each robot
-    SceneSetup.form_A = np.array([
-        [0, form_h, form_d, form_w],
-        [form_h, 0, form_w, 0],
-        [form_d, form_w, 0, form_h],
-        [form_w, 0, form_h, 0]])
-
-    SceneSetup.hull = np.array([
-        [0, 1, 0, -1],
-        [-1, 0, 1, 0],
-        [0, -1, 0, 1],
-        [1, 0, -1, 0]])
-
-    SceneSetup.form_num = 1
-    SceneSetup.form_id = np.array([0, 0, 0, 0])  # Identifier for each group
-    # Define the leader ID in each formation and the initial offset to major axis
-    SceneSetup.form_leader_id = np.array([0])
-    SceneSetup.form_leader_offset = np.array([np.arctan2(form_h, form_w)])  # np.array([0., 0.])
-
-    SceneSetup.max_form_epsilon = 0.5  # tolerance for maintaining distance
-    SceneSetup.major_l = [1.5 * form_w for _ in range(SceneSetup.form_num)]  # diameter of ellipse in major-axis
-    SceneSetup.minor_l = [1.5 * form_h for _ in range(SceneSetup.form_num)]  # ... in minor-axis
-
-    # CONTROL PARAMETER
-    SceneSetup.USECBF_LIDAR = True
-    SceneSetup.USECBF_LIDAR_SHARING = False
-    SceneSetup.USECBF_FORMATION = True
-    SceneSetup.eps_gain = 1.
-    SceneSetup.eps_weight = .01
-    SceneSetup.initial_eps = 0.5
-    SceneSetup.speed_limit = 0.15
-    SceneSetup.d_obs = 0.2
-    SceneSetup.robot_offset = 0.16
-
-    SceneSetup.form_A_eps = np.where(SceneSetup.form_A > 0, SceneSetup.initial_eps * SceneSetup.max_form_epsilon, 0)
-    SceneSetup.form_A_edges = np.count_nonzero(SceneSetup.form_A_eps, axis=1)
-
-    SceneSetup.use_unicycle = True
-    # Use default values for the remaining parameter
-
-    # NEW VALUES FOR WAYPOINTS IN Journal_Controller.py
-    SceneSetup.USE_WAYPOINTS = True
-    SceneSetup.form_waypoints = { 0: np.array([cform_goal]) }
-    SceneSetup.form_wp_orient = { 0: np.array([0]) }
-    SceneSetup.wp_switch_radius = 0.1
-    NebolabSetup.FIELD_X = [-2., 6]
-    NebolabSetup.FIELD_Y = [-2, 2]
 
 def import_scenario():
     with open('scenarios_unicycle/scenarios/formation4_shrinking.yml', 'r') as file:
@@ -161,7 +51,7 @@ def import_scenario():
     SceneSetup.form_leader_offset = np.array([np.arctan2(SceneSetup.struct[idx][1], SceneSetup.struct[idx][0])
                                               for idx in SceneSetup.form_leader_id])  # np.array([0., 0.])
 
-    print(SceneSetup.struct)
+    # print(SceneSetup.struct)
     SceneSetup.form_A_eps = np.where(SceneSetup.form_A > 0, SceneSetup.initial_eps * SceneSetup.max_form_epsilon, 0)
     SceneSetup.form_A_edges = np.count_nonzero(SceneSetup.form_A_eps, axis=1)
 
@@ -194,29 +84,29 @@ def import_scenario():
     NebolabSetup.FIELD_X = SceneSetup.FIELD_X
     NebolabSetup.FIELD_Y = SceneSetup.FIELD_Y
 
-    # print('form_wp\n', SceneSetup.form_waypoints)
-    # print('form_wp_orient\n', SceneSetup.form_wp_orient)
-    # print('init_pos\n', SceneSetup.init_pos)
-    # print('goal_pos\n', SceneSetup.goal_pos)
-    # print('init_theta\n', SceneSetup.init_theta)
-    # print('major_l\n', SceneSetup.major_l)
-    # print('minor_l\n', SceneSetup.minor_l)
-    # print('wp_switch_radius\n', SceneSetup.wp_switch_radius)
-    # print('struct\n', SceneSetup.struct)
-    # print('form_A\n', SceneSetup.form_A)
-    # print('form_A_edges\n', SceneSetup.form_A_edges)
-    # print('form_leader_id\n', SceneSetup.form_leader_id)
-    # print('form_leader_offset\n', SceneSetup.form_leader_offset)
-    # print('form_size\n', SceneSetup.form_size)
-    # print('form_id\n', SceneSetup.form_id)
-    # print('hull\n', SceneSetup.hull)
-
+    print('robot_num\n', SceneSetup.robot_num)
+    # print('default_range_data\n', SceneSetup.default_range_data)
+    print('form_wp\n', SceneSetup.form_waypoints)
+    print('form_wp_orient\n', SceneSetup.form_wp_orient)
+    print('init_pos\n', SceneSetup.init_pos)
+    print('goal_pos\n', SceneSetup.goal_pos)
+    print('init_theta\n', SceneSetup.init_theta)
+    print('major_l\n', SceneSetup.major_l)
+    print('minor_l\n', SceneSetup.minor_l)
+    print('wp_switch_radius\n', SceneSetup.wp_switch_radius)
+    print('struct\n', SceneSetup.struct)
+    print('form_A\n', SceneSetup.form_A)
+    print('form_A_edges\n', SceneSetup.form_A_edges)
+    print('form_leader_id\n', SceneSetup.form_leader_id)
+    print('form_leader_offset\n', SceneSetup.form_leader_offset)
+    print('form_size\n', SceneSetup.form_size)
+    print('form_id\n', SceneSetup.form_id)
+    print('hull\n', SceneSetup.hull)
 
     # Modify SimSetup
     [exec(f'SimSetup.{k} = {v}') for k, v in setup.items()]
     SimSetup.robot_angle_bound = np.pi / SimSetup.bound_vertices + \
                                  np.append(np.linspace(0., 2 * np.pi, num=SimSetup.bound_vertices, endpoint=False), 0)
-
 
 
 # ONLY USED IN SIMULATION
@@ -232,7 +122,8 @@ class SimSetup:
 
     now = datetime.now()
     dt_string = now.strftime("%Y%m%d_%H%M%S")
-    desc = "unit_gain_unit_weight"
+    desc = "testVis"
+    desc = ""
     sim_defname = f'animation_result/{dt_string}_{desc}/sim2D_FormationObstacleLidar'
     sim_fname_output = r'' + sim_defname + '.gif'
     sim_trajTail = None  # Show all trajectory
@@ -260,7 +151,7 @@ class SimulationCanvas:
         self.__cur_time = 0.
 
         # Initiate the robot's dynamics
-        self.__robot_dyn = [None] * SceneSetup.robot_num
+        self.__robot_dyn = [None for _ in range(SceneSetup.robot_num)]
         for i in range(SceneSetup.robot_num):
             self.__robot_dyn[i] = Unicycle(SimSetup.Ts, SceneSetup.init_pos[i], ell=NebolabSetup.TB_L_SI2UNI)
 
@@ -366,7 +257,7 @@ class SimulationCanvas:
         self.__pl_goal = {}
         for i in range(SceneSetup.robot_num):
             # ax_2D.add_patch(plt.Circle((SceneSetup.goal_pos[i][0], SceneSetup.goal_pos[i][1]), 0.03, color='g'))
-            self.__pl_goal[i], = ax_2D.plot(SceneSetup.goal_pos[i,0], SceneSetup.goal_pos[i,1], 'go')
+            self.__pl_goal[i], = ax_2D.plot(SceneSetup.goal_pos[i, 0], SceneSetup.goal_pos[i, 1], 'go')
         for obs in SceneSetup.static_obstacles:
             ax_2D.plot(obs[:, 0], obs[:, 1], 'k')
 
@@ -468,8 +359,8 @@ class SimulationCanvas:
         # Update goal position (changes due to waypoints)
         if SceneSetup.USE_WAYPOINTS:
             for i in range(SceneSetup.robot_num):
-                goal_i_x = log_data['goal_x_' + str(i)][max_idx-1]
-                goal_i_y = log_data['goal_y_' + str(i)][max_idx-1]
+                goal_i_x = log_data['goal_x_' + str(i)][max_idx - 1]
+                goal_i_y = log_data['goal_y_' + str(i)][max_idx - 1]
                 # print(i, goal_i_x, goal_i_y)
                 self.__pl_goal[i].set_data(goal_i_x, goal_i_y)
 

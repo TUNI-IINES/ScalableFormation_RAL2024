@@ -6,6 +6,7 @@ class cbf_si:
     """
     Control Barrier Function for Single Integrator
     """
+
     def __init__(self, P=None, q=None, neighbor_eps=[], scale_constraint=False):
         """
         Initialize the class for methods calling
@@ -158,6 +159,7 @@ class cbf_si:
                                                 ds, neigh_radius, gamma=10, power=3):
         """
         Process the obstacle sensing data from robots and add constraints
+        Not processing the distance from obstacle to edges
 
         :param obs_pos: Nx3 array, stacked obstacle positions detected by i-th robot
         :param pos_i: 1x3 array, i-th robot position
@@ -198,6 +200,55 @@ class cbf_si:
 
             # TRUE when closest to pos_i --> within (phi_ia + pi/2, phi_ib - pi/2)
             is_closest_i = self.is_between_equal(obst_angle, phi_ia_offset, phi_ib_offset)
+
+            # Process further only if the set is not empty
+            if np.sum(is_closest_i) > 0:
+                # Compute Distance to Agent
+                # Filter the correct shortest distance
+                BIG_VALUE = np.max(obst_range) * 100
+                dist_to_form = BIG_VALUE * np.ones(obst_angle.shape)  # BIG_VALUE by default for unuse
+                dist_to_form[is_closest_i] = obst_range[is_closest_i]
+                # Hybrid CBF for a set of closest obstacle only
+                # --------------------------------------------------
+                h_obs = dist_to_form ** 2 - ds ** 2
+                min_h = np.min(h_obs)
+                # Determine which to compute
+                is_computed = h_obs < min_h + kappa
+
+                gamma_h = gamma * np.power(min_h, power).reshape((1, 1))
+
+                for i in np.where(is_computed & is_closest_i)[0]:
+                    vect_extended = np.hstack((2 * vec_iobs[i, :].reshape((1, 3)), np.array([[0.] * self.eps_num])))
+                    self.__set_constraint(vect_extended, gamma_h)
+
+        return min_h
+
+    def add_avoid_lidar_detected_obs(self, obs_pos, pos_i, kappa, ds, gamma=10, power=3):
+
+        """
+        Process the obstacle sensing data from robots and add constraints
+
+        :param obs_pos: Nx3 array, stacked obstacle positions detected by i-th robot
+        :param pos_i: 1x3 array, i-th robot position
+        :param kappa: scalar value, kappa
+        :param ds: scalar value, minimum distance to obstacle
+        :param gamma: scalar value, coefficient of gamma function
+        :param power: scalar value, degree of gamma function
+        :return h_func: scalar values, safety estimations
+        """
+
+        # Default value of return if obs_pos is empty
+        min_h = np.nan
+
+        # Process the obstacle detected points
+        if obs_pos.shape[0] > 0:
+            # Identify obstacles position (in polar coordinate of world frame)
+            vec_iobs = obs_pos - pos_i
+            obst_range = np.linalg.norm(vec_iobs, axis=1)
+            obst_angle = np.arctan2(vec_iobs[:, 1], vec_iobs[:, 0])
+
+            # TRUE when closest to pos_i --> within (phi_ia + pi/2, phi_ib - pi/2)
+            is_closest_i = self.is_between_equal(obst_angle, -3 * np.pi, 3 * np.pi)
 
             # Process further only if the set is not empty
             if np.sum(is_closest_i) > 0:
@@ -381,8 +432,9 @@ class cbf_si:
         self.__set_constraint(vect_u, gamma * np.power(h_fmu, power).reshape((1, 1)))
 
         # Lower distance
-        # h = norm2( pos - obs )^2 - norm2( ds - max_epsilon )^2 ≥ 0
+        # h = norm2( pos - obs )^2 - norm2( min(ds - max_epsilon, min_dist) )^2 ≥ 0
         h_fml = np.power(np.linalg.norm(vect), 2) - np.power((ds - combined_eps), 2)
+        # h_fml = np.power(np.linalg.norm(vect), 2) - np.power((max(ds - combined_eps, min_dist)), 2)
         vect_l = np.hstack((-2 * vect.reshape((1, 3)), np.zeros((1, self.eps_num))))
         vect_l[0, idx + 3] = -2 * (combined_eps + ds)
         # -(dh/dpos)^T u < gamma(h)
@@ -394,6 +446,7 @@ class cbf_si:
         common_vect = np.zeros((1, self.eps_num + 3))
         common_vect[0, idx + 3] = 1
         h_eps_ceil = max_epsilon - self_eps - neigh_eps
+        # h_eps_ceil = min(max_epsilon, ds - min_dist) - self_eps - neigh_eps
         self.__set_constraint(common_vect, gamma * np.power(h_eps_ceil, power).reshape((1, 1)))
 
         # Lower epsilon
