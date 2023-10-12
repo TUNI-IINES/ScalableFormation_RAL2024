@@ -424,7 +424,7 @@ class ExpSetup():
 class ExperimentEnv():
     def __init__(self):
         # NOTE: ALWAYS DO THIS FIRST
-        adjust_SceneSetup_FormationObstacle()
+        import_scenario()
         self.global_poses = [None] * len(ExpSetup.robot_names)
 
     # NOTES: it seems cleaner to do it this way 
