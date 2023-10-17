@@ -94,7 +94,7 @@ class Controller:
         Initialize Controller
         """
         # self.cbf = [cbf_si(neighbors=SceneSetup.form_A_edges[i]) for i in range(SceneSetup.robot_num)]
-        print('SceneSetup.form_A_eps', SceneSetup.form_A_eps)
+        # print('SceneSetup.form_A_eps', SceneSetup.form_A_eps)
         self.cbf = [cbf_si(neighbor_eps=SceneSetup.form_A_eps[i]) for i in range(SceneSetup.robot_num)]
 
     def compute_control(self, feedback, computed_control):

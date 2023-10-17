@@ -16,7 +16,7 @@ from simulator.detect_obstacle import DetectObstacle
 # -----------------------------------------------------------------------
 
 def import_scenario():
-    with open('scenarios_unicycle/scenarios/formation4_enlarging.yml', 'r') as file:
+    with open('scenarios_unicycle/scenarios/formation4_mixed.yml', 'r') as file:
         import yaml
         scenario, control, setup = yaml.safe_load(file).values()
 
@@ -33,10 +33,10 @@ def import_scenario():
 
     # Formation setup
     from scipy.linalg import block_diag
-    SceneSetup.hull = block_diag(*[np.array(h) for h in scenario['formations']['hulls']])
+    # SceneSetup.hull = block_diag(*[np.array(h) for h in scenario['formations']['hulls']])
     form_l = scenario['formations']['form_scaling']
-    SceneSetup.form_num = len(scenario['formations']['hulls'])
-    SceneSetup.form_size = [len(form) for form in scenario['formations']['hulls']]
+    SceneSetup.form_num = len(scenario['formations']['links'])
+    SceneSetup.form_size = [len(form) for form in scenario['formations']['links']]
     SceneSetup.form_id = np.array([idx for idx in range(SceneSetup.form_num)
                                    for _ in range(SceneSetup.form_size[idx])])  # Identifier for each group
     SceneSetup.max_form_epsilon = block_diag(*[np.array(mfe) for mfe in scenario['formations']['max_form_epsilon']])
@@ -103,7 +103,6 @@ def import_scenario():
     print('form_leader_offset\n', SceneSetup.form_leader_offset)
     print('form_size\n', SceneSetup.form_size)
     print('form_id\n', SceneSetup.form_id)
-    print('hull\n', SceneSetup.hull)
     print('max_form_epsilon\n', SceneSetup.max_form_epsilon)
     print('d_obs\n', SceneSetup.d_obs)
 
@@ -127,7 +126,7 @@ class SimSetup:
     now = datetime.now()
     dt_string = now.strftime("%Y%m%d_%H%M%S")
     desc = "testVis"
-    desc = "enlarging"
+    desc = "mixed"
     sim_defname = f'animation_result/{dt_string}_{desc}/sim2D_FormationObstacleLidar'
     sim_fname_output = r'' + sim_defname + '.gif'
     sim_trajTail = None  # Show all trajectory
@@ -208,6 +207,7 @@ class SimulationCanvas:
             feedback.set_feedback(all_robots_pos, all_robots_theta)
             feedback.set_sensor_reading(all_range_data)
 
+            #TODO: put this in expenv
             if SimSetup.eps_visualization:  # TODO WIDHI: check notes in SimSetup
                 eps_array = control_input.get_all_epsilons()
                 feedback.set_all_eps(eps_array)
@@ -233,15 +233,18 @@ class SimulationCanvas:
     # ---------------------------------------------------------------------------------
     def __initiate_plot(self):
         # For now plot 2D with 2x2 grid space, to allow additional plot later on
-        rowNum, colNum = 2, 3
-        self.fig = plt.figure(figsize=(4 * colNum, 3 * rowNum), dpi=100)
+        # rowNum, colNum = 2, 3
+        rowNum, colNum = 6, 2
+        self.fig = plt.figure(figsize=(colNum * 4, rowNum), dpi=100)
         gs = GridSpec(rowNum, colNum, figure=self.fig)
 
         # MAIN 2D PLOT FOR UNICYCLE ROBOTS
         # ------------------------------------------------------------------------------------
-        ax_2D = self.fig.add_subplot(gs[0:2, 0:2])  # Always on
+        # ax_2D = self.fig.add_subplot(gs[0:2, 0:2])  # Always on
+        ax_2D = self.fig.add_subplot(gs[0:3, :])  # Always on
         # Only show past several seconds trajectory
-        trajTail_datanum = int(SimSetup.trajectory_trail_lenTime / SimSetup.Ts)
+        # trajTail_datanum = int(SimSetup.trajectory_trail_lenTime / SimSetup.Ts)
+        trajTail_datanum = int(SimSetup.trajectory_trail_lenTime / SimSetup.Ts) * 10
 
         self.__drawn_2D = draw2DUnicyle(ax_2D, SceneSetup.init_pos, SceneSetup.init_theta,
                                         field_x=NebolabSetup.FIELD_X, field_y=NebolabSetup.FIELD_Y,
@@ -279,7 +282,8 @@ class SimulationCanvas:
         # ADDITIONAL PLOT
         # ------------------------------------------------------------------------------------
         # Plot the distance between robots
-        self.__ax_dist = self.fig.add_subplot(gs[0, 2])
+        # self.__ax_dist = self.fig.add_subplot(gs[0, 2])
+        self.__ax_dist = self.fig.add_subplot(gs[3:6, 0])
         self.__ax_dist.set(xlabel="t [s]", ylabel="distance [m]")
         colorList = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
@@ -316,7 +320,7 @@ class SimulationCanvas:
         self.__ax_dist.legend(loc=(0.65, 0.18), prop={'size': 6})
 
         # Plot the h_function for obstacles
-        self.__ax_hobs = self.fig.add_subplot(gs[1, 2])
+        self.__ax_hobs = self.fig.add_subplot(gs[3:6, 1])
         self.__ax_hobs.set(xlabel="t [s]", ylabel="h_obs")
         l_style, cnt = ['-', ':', '.'], 0
         self.__drawn_h_obs_lines = dict()

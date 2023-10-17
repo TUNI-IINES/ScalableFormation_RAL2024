@@ -2,8 +2,8 @@ import rospy, signal
 from geometry_msgs.msg import Pose2D, Twist
 from sensor_msgs.msg import LaserScan
 
-from scenarios_unicycle.CCTA2024_FormationObstacleLidar_scenario import SceneSetup, ExpSetup, ExperimentEnv
-from scenarios_unicycle.CCTA2024_Controller import FeedbackInformation, Controller, ControlOutput
+from scenarios_unicycle.CCTA2024_FormationObstacleLidar_scenario import ExpSetup, ExperimentEnv
+from scenarios_unicycle.CCTA2024_Controller import FeedbackInformation, Controller, ControlOutput, SceneSetup
 
 
 # TODO: think of a better way to do this with less than 4 robot
