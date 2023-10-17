@@ -14,119 +14,9 @@ from simulator.detect_obstacle import DetectObstacle
 
 # GENERAL PARAM AND COMPUTATION FOR THIS SPECIFIC SCENARIO (Both SIM and EXP)
 # -----------------------------------------------------------------------
-def adjust_SceneSetup_FormationObstacle():
-    # The selected scenario to run
-    # 1. CCTA2022 1 formation with 4 robots avoiding obstacles
-
-    # Define one formation
-    cform_init = np.array([0, 0, 0])
-    cform_goal = np.array([5, 0, 0])
-    form_w = 1  # width of rectangle formation
-    form_h = 1  # height of rectangle formation
-    form_d = np.sqrt(np.power(form_w, 2) + np.power(form_h, 2))  # Diagonal of rectangle
-
-    # BELOW REPLACES THE ORIGINAL VARIABLES IN SceneSetup CLASS
-    # ---------------------------------------------------------------------
-    SceneSetup.robot_num = 4
-    SceneSetup.robot_color = ["red", "blue", "green", "orange"]
-    # Set the static obstacles
-    # SceneSetup.static_obstacles = [
-    #     np.array([[-.5, .5, 0], [.5, .5, 0], [.5, 4., 0], [-.5, 4., 0], [-.5, .5, 0]]),
-    #     np.array([[-.5, -3., 0], [.5, -3., 0], [.5, -.9, 0], [-.5, -.9, 0], [-.5, -3., 0]])
-    # ]
-    SceneSetup.static_obstacles = [
-        np.array([[2, 0, 0], [3, .4, 0], [4, 0, 0], [3, -0.4, 0], [2, 0, 0]]),
-        # np.array([[-1, -1.5, 0], [5, -1.5, 0], [3, -0.6, 0], [1.5, -0.6, 0], [-1, -1.5, 0]]),
-        # np.array([[-1, 1.5, 0], [5, 1.5, 0], [3, 0.6, 0], [1.5, 0.6, 0], [-1, 1.5, 0]])
-    ]
-
-    # Default values for sensing data --> assume with the largest possible number with 1 deg resolution
-    SceneSetup.sensor_resolution = 360
-    SceneSetup.default_range = 1
-    SceneSetup.default_range_data = np.ones((SceneSetup.robot_num, SceneSetup.sensor_resolution)) * SceneSetup.default_range
-    SceneSetup.kappa = 0.15
-
-    SceneSetup.struct = np.array([
-        [ form_h / 2,  form_w / 2, 0],
-        [-form_h / 2,  form_w / 2, 0],
-        [-form_h / 2, -form_w / 2, 0],
-        [ form_h / 2, -form_w / 2, 0] ])
-
-    # Set initial formation position --> Order: red, blue, green, orange
-    # SceneSetup.init_pos = np.array([
-    #     cform_init + np.array([form_w / 2, -form_h / 2, 0]),
-    #     cform_init + np.array([form_w / 2, form_h / 2, 0]),
-    #     cform_init + np.array([-form_w / 2, form_h / 2, 0]),
-    #     cform_init + np.array([-form_w / 2, -form_h / 2, 0]), ])
-    SceneSetup.init_pos = np.array([
-        cform_init + np.array([form_h / 2, form_w / 2, 0]),
-        cform_init + np.array([-form_h / 2, form_w / 2, 0]),
-        cform_init + np.array([-form_h / 2, -form_w / 2, 0]),
-        cform_init + np.array([form_h / 2, -form_w / 2, 0]), ])
-    SceneSetup.init_theta = np.array([0, 0, 0, 0])
-    # Set desired formation position --> rotated -90deg in final configuration
-    # SceneSetup.goal_pos = np.array([
-    #     cform_goal + np.array([-form_h / 2, -form_w / 2, 0]),
-    #     cform_goal + np.array([form_h / 2, -form_w / 2, 0]),
-    #     cform_goal + np.array([form_h / 2, form_w / 2, 0]),
-    #     cform_goal + np.array([-form_h / 2, form_w / 2, 0]), ])
-    SceneSetup.goal_pos = np.array([
-        cform_goal + np.array([form_w / 2, form_h / 2, 0]),
-        cform_goal + np.array([-form_w / 2, form_h / 2, 0]),
-        cform_goal + np.array([-form_w / 2, -form_h / 2, 0]),
-        cform_goal + np.array([form_w / 2, -form_h / 2, 0]), ])
-
-    # Here we assume any final value is OK
-    # distance to keep between each robot
-    SceneSetup.form_A = np.array([
-        [0, form_h, form_d, form_w],
-        [form_h, 0, form_w, 0],
-        [form_d, form_w, 0, form_h],
-        [form_w, 0, form_h, 0]])
-
-    SceneSetup.hull = np.array([
-        [0, 1, 0, -1],
-        [-1, 0, 1, 0],
-        [0, -1, 0, 1],
-        [1, 0, -1, 0]])
-
-    SceneSetup.form_num = 1
-    SceneSetup.form_id = np.array([0, 0, 0, 0])  # Identifier for each group
-    # Define the leader ID in each formation and the initial offset to major axis
-    SceneSetup.form_leader_id = np.array([0])
-    SceneSetup.form_leader_offset = np.array([np.arctan2(form_h, form_w)])  # np.array([0., 0.])
-
-    SceneSetup.max_form_epsilon = 0.5  # tolerance for maintaining distance
-    SceneSetup.major_l = [1.5 * form_w for _ in range(SceneSetup.form_num)]  # diameter of ellipse in major-axis
-    SceneSetup.minor_l = [1.5 * form_h for _ in range(SceneSetup.form_num)]  # ... in minor-axis
-
-    # CONTROL PARAMETER
-    SceneSetup.USECBF_LIDAR = True
-    SceneSetup.USECBF_LIDAR_SHARING = False
-    SceneSetup.USECBF_FORMATION = True
-    SceneSetup.eps_gain = 1.
-    SceneSetup.eps_weight = .01
-    SceneSetup.initial_eps = 0.5
-    SceneSetup.speed_limit = 0.15
-    SceneSetup.d_obs = 0.2
-    SceneSetup.robot_offset = 0.16
-
-    SceneSetup.form_A_eps = np.where(SceneSetup.form_A > 0, SceneSetup.initial_eps * SceneSetup.max_form_epsilon, 0)
-    SceneSetup.form_A_edges = np.count_nonzero(SceneSetup.form_A_eps, axis=1)
-
-    SceneSetup.use_unicycle = True
-    # Use default values for the remaining parameter
-
-    # NEW VALUES FOR WAYPOINTS IN Journal_Controller.py
-    SceneSetup.USE_WAYPOINTS = True
-    SceneSetup.form_waypoints = { 0: np.array([cform_goal]) }
-    SceneSetup.form_wp_orient = { 0: np.array([0]) }
-    SceneSetup.wp_switch_radius = 0.1
-    NebolabSetup.FIELD_X = [-2., 6]
-    NebolabSetup.FIELD_Y = [-2, 2]
 
 def import_scenario():
-    with open('scenarios_unicycle/scenarios/formation4_shrinking.yml', 'r') as file:
+    with open('scenarios_unicycle/scenarios/formation4_mixed.yml', 'r') as file:
         import yaml
         scenario, control, setup = yaml.safe_load(file).values()
 
@@ -137,18 +27,19 @@ def import_scenario():
     [exec(f'SceneSetup.{k} = {v}') for data in control.values() for k, v in data.items()]
     SceneSetup.robot_num = len(scenario['formations']['structs'])
     # TODO: this should not be like this
-    SceneSetup.robot_color = [np.random.random() for _ in range(SceneSetup.robot_num)]
+    SceneSetup.robot_color = [f'{np.random.random():.3f}' for _ in range(SceneSetup.robot_num)]
     SceneSetup.default_range_data = np.ones((SceneSetup.robot_num,
                                              SceneSetup.sensor_resolution)) * SceneSetup.default_range
 
     # Formation setup
     from scipy.linalg import block_diag
-    SceneSetup.hull = block_diag(*[np.array(h) for h in scenario['formations']['hulls']])
+    # SceneSetup.hull = block_diag(*[np.array(h) for h in scenario['formations']['hulls']])
     form_l = scenario['formations']['form_scaling']
-    SceneSetup.form_num = len(scenario['formations']['hulls'])
-    SceneSetup.form_size = [len(form) for form in scenario['formations']['hulls']]
+    SceneSetup.form_num = len(scenario['formations']['links'])
+    SceneSetup.form_size = [len(form) for form in scenario['formations']['links']]
     SceneSetup.form_id = np.array([idx for idx in range(SceneSetup.form_num)
                                    for _ in range(SceneSetup.form_size[idx])])  # Identifier for each group
+    SceneSetup.max_form_epsilon = block_diag(*[np.array(mfe) for mfe in scenario['formations']['max_form_epsilon']])
 
     # Define the leader ID in each formation and the initial offset to major axis
     SceneSetup.struct = np.array([np.array(scenario['formations']['structs'][idx]) * form_l[SceneSetup.form_id[idx]]
@@ -161,8 +52,9 @@ def import_scenario():
     SceneSetup.form_leader_offset = np.array([np.arctan2(SceneSetup.struct[idx][1], SceneSetup.struct[idx][0])
                                               for idx in SceneSetup.form_leader_id])  # np.array([0., 0.])
 
-    print(SceneSetup.struct)
-    SceneSetup.form_A_eps = np.where(SceneSetup.form_A > 0, SceneSetup.initial_eps * SceneSetup.max_form_epsilon, 0)
+    # print(SceneSetup.struct)
+    # SceneSetup.form_A_eps = np.where(SceneSetup.form_A > 0, SceneSetup.initial_eps * SceneSetup.max_form_epsilon, 0)
+    SceneSetup.form_A_eps = SceneSetup.initial_eps * SceneSetup.max_form_epsilon
     SceneSetup.form_A_edges = np.count_nonzero(SceneSetup.form_A_eps, axis=1)
 
     # Working with Waypoints
@@ -194,6 +86,8 @@ def import_scenario():
     NebolabSetup.FIELD_X = SceneSetup.FIELD_X
     NebolabSetup.FIELD_Y = SceneSetup.FIELD_Y
 
+    print('robot_num\n', SceneSetup.robot_num)
+    # print('default_range_data\n', SceneSetup.default_range_data)
     print('form_wp\n', SceneSetup.form_waypoints)
     print('form_wp_orient\n', SceneSetup.form_wp_orient)
     print('init_pos\n', SceneSetup.init_pos)
@@ -209,14 +103,13 @@ def import_scenario():
     print('form_leader_offset\n', SceneSetup.form_leader_offset)
     print('form_size\n', SceneSetup.form_size)
     print('form_id\n', SceneSetup.form_id)
-    print('hull\n', SceneSetup.hull)
-
+    print('max_form_epsilon\n', SceneSetup.max_form_epsilon)
+    print('d_obs\n', SceneSetup.d_obs)
 
     # Modify SimSetup
     [exec(f'SimSetup.{k} = {v}') for k, v in setup.items()]
     SimSetup.robot_angle_bound = np.pi / SimSetup.bound_vertices + \
                                  np.append(np.linspace(0., 2 * np.pi, num=SimSetup.bound_vertices, endpoint=False), 0)
-
 
 
 # ONLY USED IN SIMULATION
@@ -232,7 +125,8 @@ class SimSetup:
 
     now = datetime.now()
     dt_string = now.strftime("%Y%m%d_%H%M%S")
-    desc = "unit_gain_unit_weight"
+    desc = "testVis"
+    desc = "mixed"
     sim_defname = f'animation_result/{dt_string}_{desc}/sim2D_FormationObstacleLidar'
     sim_fname_output = r'' + sim_defname + '.gif'
     sim_trajTail = None  # Show all trajectory
@@ -240,13 +134,6 @@ class SimSetup:
 
     timeseries_window = 1  # in seconds, for the time series data
     eps_visualization = True
-    # TODO WIDHI: In the journal version we will not consider scalable epsilon.
-    # So, I editted some codes to wrap everything related to epsilon within 
-    #   if SimSetup.eps_visualization:
-    # It should be handled better. Please double check my edit.
-    # AND, any update on epsilon should be internally in cbf_si
-    # Here, it should only be related to plotting.
-
     DETECT_OTHER_ROBOTS = True
     robot_angle_bound = np.append(np.linspace(0., 2 * np.pi, num=8, endpoint=False), 0) + np.pi / 8
     robot_rad = 0.1
@@ -260,7 +147,7 @@ class SimulationCanvas:
         self.__cur_time = 0.
 
         # Initiate the robot's dynamics
-        self.__robot_dyn = [None] * SceneSetup.robot_num
+        self.__robot_dyn = [None for _ in range(SceneSetup.robot_num)]
         for i in range(SceneSetup.robot_num):
             self.__robot_dyn[i] = Unicycle(SimSetup.Ts, SceneSetup.init_pos[i], ell=NebolabSetup.TB_L_SI2UNI)
 
@@ -320,6 +207,7 @@ class SimulationCanvas:
             feedback.set_feedback(all_robots_pos, all_robots_theta)
             feedback.set_sensor_reading(all_range_data)
 
+            #TODO: put this in expenv
             if SimSetup.eps_visualization:  # TODO WIDHI: check notes in SimSetup
                 eps_array = control_input.get_all_epsilons()
                 feedback.set_all_eps(eps_array)
@@ -331,7 +219,7 @@ class SimulationCanvas:
                     self.log.save_to_pkl(SimSetup.sim_fdata_vis)
                     # TODO: plot data further from saved pickle
                     if SimSetup.plot_saved_data:
-                        from scenarios_unicycle.pickleplot import scenario_pkl_plot
+                        from pickleplot import scenario_pkl_plot
                         scenario_pkl_plot()
                 print(f"Stopping the simulation, tmax reached: {self.__cur_time:.2f} s")
                 # if not SimSetup.save_animate: exit() # force exit
@@ -345,15 +233,18 @@ class SimulationCanvas:
     # ---------------------------------------------------------------------------------
     def __initiate_plot(self):
         # For now plot 2D with 2x2 grid space, to allow additional plot later on
-        rowNum, colNum = 2, 3
-        self.fig = plt.figure(figsize=(4 * colNum, 3 * rowNum), dpi=100)
+        # rowNum, colNum = 2, 3
+        rowNum, colNum = 6, 2
+        self.fig = plt.figure(figsize=(colNum * 4, rowNum), dpi=100)
         gs = GridSpec(rowNum, colNum, figure=self.fig)
 
         # MAIN 2D PLOT FOR UNICYCLE ROBOTS
         # ------------------------------------------------------------------------------------
-        ax_2D = self.fig.add_subplot(gs[0:2, 0:2])  # Always on
+        # ax_2D = self.fig.add_subplot(gs[0:2, 0:2])  # Always on
+        ax_2D = self.fig.add_subplot(gs[0:3, :])  # Always on
         # Only show past several seconds trajectory
-        trajTail_datanum = int(SimSetup.trajectory_trail_lenTime / SimSetup.Ts)
+        # trajTail_datanum = int(SimSetup.trajectory_trail_lenTime / SimSetup.Ts)
+        trajTail_datanum = int(SimSetup.trajectory_trail_lenTime / SimSetup.Ts) * 10
 
         self.__drawn_2D = draw2DUnicyle(ax_2D, SceneSetup.init_pos, SceneSetup.init_theta,
                                         field_x=NebolabSetup.FIELD_X, field_y=NebolabSetup.FIELD_Y,
@@ -366,7 +257,7 @@ class SimulationCanvas:
         self.__pl_goal = {}
         for i in range(SceneSetup.robot_num):
             # ax_2D.add_patch(plt.Circle((SceneSetup.goal_pos[i][0], SceneSetup.goal_pos[i][1]), 0.03, color='g'))
-            self.__pl_goal[i], = ax_2D.plot(SceneSetup.goal_pos[i,0], SceneSetup.goal_pos[i,1], 'go')
+            self.__pl_goal[i], = ax_2D.plot(SceneSetup.goal_pos[i, 0], SceneSetup.goal_pos[i, 1], 'go')
         for obs in SceneSetup.static_obstacles:
             ax_2D.plot(obs[:, 0], obs[:, 1], 'k')
 
@@ -380,18 +271,19 @@ class SimulationCanvas:
             for j in range(SceneSetup.robot_num):
                 if (i < j) and (SceneSetup.form_A[i, j] > 0):
                     self.__drawn_comm_lines[str(i) + '_' + str(j)], = ax_2D.plot([-i, -i], [j, j],
-                                                                                 color='k', linewidth=0.5)
+                                                                                 color='k', linewidth=0.5 / SceneSetup.max_form_epsilon[i][j])
 
         # Display sensing data
         self.__pl_sens = dict()
         __colorList = plt.rcParams['axes.prop_cycle'].by_key()['color']
         for i in range(SceneSetup.robot_num):
-            self.__pl_sens[i], = ax_2D.plot(0, 0, '.', color=__colorList[i])
+            self.__pl_sens[i], = ax_2D.plot(0, 0, '.', color=__colorList[i], markersize=0.25)
 
         # ADDITIONAL PLOT
         # ------------------------------------------------------------------------------------
         # Plot the distance between robots
-        self.__ax_dist = self.fig.add_subplot(gs[0, 2])
+        # self.__ax_dist = self.fig.add_subplot(gs[0, 2])
+        self.__ax_dist = self.fig.add_subplot(gs[3:6, 0])
         self.__ax_dist.set(xlabel="t [s]", ylabel="distance [m]")
         colorList = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
@@ -408,25 +300,27 @@ class SimulationCanvas:
         # Draw the specified band
         array_req_dist = np.unique(SceneSetup.form_A)
         array_req_dist = np.delete(array_req_dist, 0)
+        array_max_eps = np.unique(SceneSetup.max_form_epsilon)
+        array_max_eps = np.delete(array_max_eps, 0)
         self.__prev_fill = list()
 
         for idx, dist in enumerate(array_req_dist):
             if idx == 0:  # only put 1 label
-                self.__ax_dist.fill_between([0, SimSetup.tmax], [dist - SceneSetup.max_form_epsilon] * 2,
-                                            [dist + SceneSetup.max_form_epsilon] * 2,
+                self.__ax_dist.fill_between([0, SimSetup.tmax], [dist - array_max_eps[idx]] * 2,
+                                            [dist + array_max_eps[idx]] * 2,
                                             alpha=0.12, color='k', linewidth=0, label='specified distance')
             else:
-                self.__ax_dist.fill_between([0, SimSetup.tmax], [dist - SceneSetup.max_form_epsilon] * 2,
-                                            [dist + SceneSetup.max_form_epsilon] * 2,
+                self.__ax_dist.fill_between([0, SimSetup.tmax], [dist - array_max_eps[idx]] * 2,
+                                            [dist + array_max_eps[idx]] * 2,
                                             alpha=0.12, color='k', linewidth=0)
         # set y-axis
-        self.__ax_dist.set(ylim=(min(array_req_dist) - SceneSetup.max_form_epsilon - 0.1,
-                                 max(array_req_dist) + SceneSetup.max_form_epsilon + 0.1))
+        self.__ax_dist.set(ylim=(min(array_req_dist) - max(array_max_eps) - 0.1,
+                                 max(array_req_dist) + max(array_max_eps) + 0.1))
         self.__ax_dist.grid(True)
         self.__ax_dist.legend(loc=(0.65, 0.18), prop={'size': 6})
 
         # Plot the h_function for obstacles
-        self.__ax_hobs = self.fig.add_subplot(gs[1, 2])
+        self.__ax_hobs = self.fig.add_subplot(gs[3:6, 1])
         self.__ax_hobs.set(xlabel="t [s]", ylabel="h_obs")
         l_style, cnt = ['-', ':', '.'], 0
         self.__drawn_h_obs_lines = dict()
@@ -468,8 +362,8 @@ class SimulationCanvas:
         # Update goal position (changes due to waypoints)
         if SceneSetup.USE_WAYPOINTS:
             for i in range(SceneSetup.robot_num):
-                goal_i_x = log_data['goal_x_' + str(i)][max_idx-1]
-                goal_i_y = log_data['goal_y_' + str(i)][max_idx-1]
+                goal_i_x = log_data['goal_x_' + str(i)][max_idx - 1]
+                goal_i_y = log_data['goal_y_' + str(i)][max_idx - 1]
                 # print(i, goal_i_x, goal_i_y)
                 self.__pl_goal[i].set_data(goal_i_x, goal_i_y)
 
@@ -534,7 +428,7 @@ class ExpSetup():
 class ExperimentEnv():
     def __init__(self):
         # NOTE: ALWAYS DO THIS FIRST
-        adjust_SceneSetup_FormationObstacle()
+        import_scenario()
         self.global_poses = [None] * len(ExpSetup.robot_names)
 
     # NOTES: it seems cleaner to do it this way 

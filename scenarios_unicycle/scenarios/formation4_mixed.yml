@@ -6,6 +6,7 @@ scenario:
     # Each array within as a vertex of the obstacle.
     - [ [ 1.0, 1.0, 0.0 ], [ 4.0, 1.0, 0.0 ], [ 3.0, 0.5, 0.0 ], [ 2.0, 0.5, 0.0 ], [ 1.0, 1.0, 0.0 ] ]
     - [ [ 1.0, -1.0, 0.0 ], [ 4.0, -1.0, 0.0 ], [ 3.0, -0.5, 0.0 ], [ 2.0, -0.5, 0.0 ], [ 1.0, -1.0, 0.0 ] ]
+    - [ [ 5.0, 0, 0 ], [ 6.0, 0.5, 0 ], [ 7.0, 0, 0 ], [ 6.0, -0.5, 0 ], [ 5.0, 0, 0 ] ]
   formations:
     structs:
       # N robots x 3 coordinate (x, y, z) matrix
@@ -14,18 +15,9 @@ scenario:
       - [ -0.354, 0.354, 0.0 ]
       - [ -0.354, -0.354, 0.0 ]
       - [ 0.354, -0.354, 0.0 ]
-    hulls:
-      # N robots x N robots matrix
-      # Each array as a hull matrix of the formation
-      # -1 and 1 indicate the previous and following hull neighbor of each robot
-      # Sort of block diagonal matrix.
-      - [ [ 0, 1, 0, -1 ],
-          [ -1, 0, 1, 0 ],
-          [ 0, -1, 0, 1 ],
-          [ 1, 0, -1, 0 ] ]
     links:
-      # N robots x N robots matrix
-      # Each array as a Adjacency matrix of each formation
+      # Array of N robots x N robots matrix
+      # Each array as an Adjacency matrix of each formation
       # Positive value indicates the length of the link to each neighbor referring with form_scaling
       - [ [ 0, 0.707, 1.0, 0.707 ],
           [ 0.707, 0, 0.707, 0 ],
@@ -35,7 +27,7 @@ scenario:
     # Each element as formation's scaling, major and minor lengths of the ellipse
     form_scaling: [ 1.4142 ]
     max_form_epsilon:
-      # N robots x N robots matrix
+      # Each array as an Adjacency matrix of each formation
       - [ [ 0, 0.2, 1.0, 1.0 ],
           [ 0.2, 0, 1.0, 0 ],
           [ 1.0, 1.0, 0, 0.2 ],
@@ -50,18 +42,16 @@ scenario:
       - [ 0.0, 0.0, 0.0, 0.0 ]
     waypoints:
       # Each line as a set of waypoints (position[3] & orientation[1]) of each formation
-      - [ [ 5.0, 0.0, 0.0, 0.0 ] ]
+      - [ [ 8.5, 0.0, 0.0, 0.0 ] ]
     wp_switch_radius: 0.1
 control:
   features:
     use_unicycle: true
     USE_WAYPOINTS: true
     USECBF_LIDAR: true
-    USECBF_LIDAR_SHARING: false
     USECBF_FORMATION: true
   parameters:
     d_obs: 0.1
-    robot_offset: 0.0
     speed_limit: 0.15
     initial_eps: 0.5
     eps_gain: 0.7
@@ -71,11 +61,11 @@ control:
     kappa: 0.15
     gamma_staticObs: 200
     # This is for the most-outer walls
-    FIELD_X: [ -2, 6 ]
-    FIELD_Y: [ -2, 2 ]
+    FIELD_X: [ -1.5, 10 ]
+    FIELD_Y: [ -1.5, 1.5 ]
 setup:
   Ts: 0.02
-  tmax: 90
+  tmax: 120
   save_animate: true
   save_data: true
   plot_saved_data: true
