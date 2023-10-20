@@ -1,0 +1,286 @@
+<sdf version='1.5'>
+    <!-- This SDF file is for enlarging environment -->
+    <model name='ros_symbol'>
+      <static>1</static>
+      <link name='symbol'>
+        
+        <!--collision name='wall_1'>
+          <pose>2.0 2.0 0.25 0 0 0</pose>
+          <geometry>
+            <box>
+            <size>8 0.25 0.5</size>
+          </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+
+        <visual name='wall_1'>
+          <pose>2.0 2.0 0.25 0 0 0</pose>
+          <geometry>
+            <box>
+            <size>8 0.25 0.5</size>
+          </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Bricks</name>
+            </script>
+          </material>
+        </visual>
+
+        <collision name='wall_2'>
+          <pose>2.0 -2.0 0.25 0 0 0</pose>
+          <geometry>
+            <box>
+            <size>8 0.25 0.5</size>
+          </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+
+        <visual name='wall_2'>
+          <pose>2.0 -2.0 0.25 0 0 0</pose>
+          <geometry>
+            <box>
+            <size>8 0.25 0.5</size>
+          </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Bricks</name>
+            </script>
+          </material>
+        </visual>
+
+        <collision name='wall_3'>
+          <pose>-2.0 0.0 0.25 0 0 1.5708</pose>
+          <geometry>
+            <box>
+            <size>4 0.25 0.5</size>
+          </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+
+        <visual name='wall_3'>
+          <pose>-2.0 0.0 0.25 0 0 1.5708</pose>
+          <geometry>
+            <box>
+            <size>4 0.25 0.5</size>
+          </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Bricks</name>
+            </script>
+          </material>
+        </visual>
+
+        <collision name='wall_4'>
+          <pose>6.0 0.0 0.25 0 0 1.5708</pose>
+          <geometry>
+            <box>
+            <size>4 0.25 0.5</size>
+          </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+
+        <visual name='wall_4'>
+          <pose>6.0 0.0 0.25 0 0 1.5708</pose>
+          <geometry>
+            <box>
+            <size>4 0.25 0.5</size>
+          </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Bricks</name>
+            </script>
+          </material>
+        </visual-->
+
+
+        <!-- Obstacle-->
+        <collision name='obs_wall_1'>
+          <!-- center of two points x,y,z,r,p,y-->
+          <pose>1.5 0.25 0.25 0 0 0.464</pose>
+          <geometry>
+            <box>
+            <!-- length, width, height-->
+            <size>1.11803398875 0.01 0.5</size>
+          </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+
+        <!-- parameters are the same, this is for visualization-->
+        <visual name='obs_wall_1'>
+          <pose>1.5 0.25 0.25 0 0 0.464</pose>
+          <geometry>
+            <box>
+            <size>1.11803398875 0.01 0.5</size>
+          </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Bricks</name>
+            </script>
+          </material>
+        </visual>
+
+        <collision name='obs_wall_2'>
+          <pose>2.5 0.25 0.25 0 0 -0.464</pose>
+          <geometry>
+            <box>
+            <size>1.11803398875 0.01 0.5</size>
+          </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+
+        <visual name='obs_wall_2'>
+          <pose>2.5 0.25 0.25 0 0 -0.464</pose>
+          <geometry>
+            <box>
+            <size>1.11803398875 0.01 0.5</size>
+          </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Bricks</name>
+            </script>
+          </material>
+        </visual>
+
+        <collision name='obs_wall_3'>
+          <pose>2.5 -0.25 0.25 0 0 0.464</pose>
+          <geometry>
+            <box>
+            <size>1.11803398875 0.01 0.5</size>
+          </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+
+        <visual name='obs_wall_3'>
+          <pose>2.5 -0.25 0.25 0 0 0.464</pose>
+          <geometry>
+            <box>
+            <size>1.11803398875 0.01 0.5</size>
+          </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Bricks</name>
+            </script>
+          </material>
+        </visual>
+
+        <collision name='obs_wall_4'>
+          <pose>1.5 -0.25 0.25 0 0 -0.464</pose>
+          <geometry>
+            <box>
+            <size>1.11803398875 0.01 0.5</size>
+          </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+
+        <visual name='obs_wall_4'>
+          <pose>1.5 -0.25 0.25 0 0 -0.464</pose>
+          <geometry>
+            <box>
+            <size>1.11803398875 0.01 0.5</size>
+          </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Bricks</name>
+            </script>
+          </material>
+        </visual>
+
+    </link>
+  </model>
+</sdf>
