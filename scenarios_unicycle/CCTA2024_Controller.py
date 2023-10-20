@@ -1,5 +1,6 @@
 from control_lib.go_to_goal import Pcontrol
-from control_lib.cbf_single_integrator import cbf_si, np
+# from control_lib.cbf_single_integrator import cbf_si, np
+from control_lib.cbf_si_v2 import cbf_si, np
 from nebolab_experiment_setup import NebolabSetup
 
 

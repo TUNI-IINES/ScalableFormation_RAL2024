@@ -1,12 +1,14 @@
 import numpy as np
-import cvxopt
-from kiwisolver import Variable, Solver
 
-class cbf_si:
-    """
-    Control Barrier Function for Single Integrator
-    """
+USE_QPSOLVERS = True
 
+if USE_QPSOLVERS:
+    from qpsolvers import solve_qp
+else:
+    import cvxopt
+
+
+class cbf_si():
     def __init__(self, P=None, q=None, neighbor_eps=[], scale_constraint=False):
         """
         Initialize the class for methods calling
@@ -40,8 +42,6 @@ class cbf_si:
             self.constraint_G = np.append(self.constraint_G, G_mat, axis=0)
             self.constraint_h = np.append(self.constraint_h, h_mat, axis=0)
 
-    # TODO: change the size of u_nom and u_star from 2x1 to 3x1
-    #       change the default size of P and q
     def compute_safe_controller(self, u_nom, v_nom, P=None, q=None, weight=1.):
         """
         Compute u_star
@@ -53,6 +53,7 @@ class cbf_si:
         :param q: 4x1 matrix, in x'Px + q'x + c
         :return u_star, v_star: 4x1 vector, optimal u + v
         """
+
         if (P is None) and (q is None):
             v_nom = v_nom[v_nom != 0]
             P, q = 2 * np.eye(3 + self.eps_num), -2 * np.hstack((u_nom, weight * v_nom))
@@ -60,34 +61,45 @@ class cbf_si:
                 P[3 + i, 3 + i] = 2 * weight
 
         if self.constraint_G is not None:
-            G_mat = self.constraint_G.copy()
-            h_mat = self.constraint_h.copy()
-            # IMPLEMENTATION OF Control Barrier Function
-            if self.is_scale_constraint:
-                for i in range(len(h_mat)):
-                    G_mat[i] = self.constraint_G[i] / self.constraint_h[i]
-                    h_mat[i] = 1.
+            if USE_QPSOLVERS:
+                sol = solve_qp(P, q, self.constraint_G, self.constraint_h,
+                               solver="daqp")
+                #   solver="quadprog")
+                #   solver="proxqp")
 
-            # Minimization
-            P_mat = cvxopt.matrix(P.astype(np.double), tc='d')
-            q_mat = cvxopt.matrix(q.astype(np.double), tc='d')
-            # Resize the G and H into appropriate matrix for optimization
-            G_mat = cvxopt.matrix(G_mat.astype(np.double), tc='d')
-            h_mat = cvxopt.matrix(h_mat.astype(np.double), tc='d')
+                u_star = np.array([sol[0], sol[1], sol[2]])
+                v_star = np.array(sol[3:3 + self.eps_num])
 
-            # Solving Optimization
-            cvxopt.solvers.options['show_progress'] = False
-            sol = cvxopt.solvers.qp(P_mat, q_mat, G_mat, h_mat, verbose=False)
-
-            if sol['status'] == 'optimal':
-                # Get solution + converting from cvxopt base matrix to numpy array
-                u_star = np.array([sol['x'][0], sol['x'][1], sol['x'][2]])
-                v_star = np.array(sol['x'][3:3 + self.eps_num])
-                # print('OPTIMAL:', v_star)
             else:
-                print('WARNING QP SOLVER' + ' status: ' + sol['status'] + ' --> use nominal instead')
-                u_star = u_nom.copy()
-                v_star = v_nom.copy()
+                G_mat = self.constraint_G.copy()
+                h_mat = self.constraint_h.copy()
+                # IMPLEMENTATION OF Control Barrier Function
+                if self.is_scale_constraint:
+                    for i in range(len(h_mat)):
+                        G_mat[i] = self.constraint_G[i] / self.constraint_h[i]
+                        h_mat[i] = 1.
+
+                # Minimization
+                P_mat = cvxopt.matrix(P.astype(np.double), tc='d')
+                q_mat = cvxopt.matrix(q.astype(np.double), tc='d')
+                # Resize the G and H into appropriate matrix for optimization
+                G_mat = cvxopt.matrix(self.constraint_G.astype(np.double), tc='d')
+                h_mat = cvxopt.matrix(self.constraint_h.astype(np.double), tc='d')
+                # Solving Optimization
+                cvxopt.solvers.options['show_progress'] = False
+                sol = cvxopt.solvers.qp(P_mat, q_mat, G_mat, h_mat, verbose=False)
+
+                if sol['status'] == 'optimal':
+                    # Get solution + converting from cvxopt base matrix to numpy array
+                    u_star = np.array([sol['x'][0], sol['x'][1], sol['x'][2]])
+                    v_star = np.array(sol['x'][3:3 + self.eps_num])
+                    # print('OPTIMAL:', v_star)
+                else:
+                    print('WARNING QP SOLVER' + ' status: ' + sol['status'] + ' --> use nominal instead')
+                    u_star = u_nom.copy()
+                    v_star = v_nom.copy()
+
+
         else:  # No constraints imposed
             u_star = u_nom.copy()
             v_star = v_nom.copy()
