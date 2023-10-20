@@ -20,30 +20,34 @@ SRC = "/home/dl/turtlebot3_ws/src/turtlebot3_simulations/turtlebot3_gazebo/scrip
 TURTLEBOT3_MODEL = os.environ['TURTLEBOT3_MODEL']
 
 def PyToGazConv(yaml_name):
- with open(f'{SRC}{yaml_name}.yml', 'r') as file:
-  scenario, _, _ = yaml.safe_load(file).values()
+    if not os.path.exists(f'{SRC}{yaml_name}.yml'):
+            print(f"File {yaml_name} does not exist.")
+            yaml_name = "formation4_mixed"
 
-  form_l = scenario['formations']['form_scaling']
-  form_size = [len(form) for form in scenario['formations']['links']]
-  form_num = len(scenario['formations']['links'])
-  form_id = np.array([idx for idx in range(form_num)
-                      for _ in range(form_size[idx])])
-  robot_num = len(scenario['formations']['structs'])
-  struct = np.array([np.array(scenario['formations']['structs'][idx]) * form_l[form_id[idx]]
-                     for idx in range(robot_num)])
-  rot = lambda alpha: np.array([[np.cos(alpha), -np.sin(alpha), 0.],
+    with open(f'{SRC}{yaml_name}.yml', 'r') as file:
+        scenario, _, _ = yaml.safe_load(file).values()
+
+    form_l = scenario['formations']['form_scaling']
+    form_size = [len(form) for form in scenario['formations']['links']]
+    form_num = len(scenario['formations']['links'])
+    form_id = np.array([idx for idx in range(form_num)
+                        for _ in range(form_size[idx])])
+    robot_num = len(scenario['formations']['structs'])
+    struct = np.array([np.array(scenario['formations']['structs'][idx]) * form_l[form_id[idx]]
+                        for idx in range(robot_num)])
+    rot = lambda alpha: np.array([[np.cos(alpha), -np.sin(alpha), 0.],
                                 [np.sin(alpha), np.cos(alpha), 0.],
                                 [0., 0., 1.]])
 
-  init_pos = np.array([scenario['positions']['initial_positions'][form_id[idx]][:-1]+ rot(scenario['positions']
-                                                                                          ['initial_positions'][form_id[idx]]
-                                                                                          [-1]) @ struct[idx]
-                       for idx in range(robot_num)
-  ])
+    init_pos = np.array([scenario['positions']['initial_positions'][form_id[idx]][:-1]+ rot(scenario['positions']
+                                                                                            ['initial_positions'][form_id[idx]]
+                                                                                            [-1]) @ struct[idx]
+                        for idx in range(robot_num)
+    ])
 
- init_pos_gaz ={f"tb3_{idx}": [*init_pos[idx], 0] for idx in range(robot_num)}
+    init_pos_gaz ={f"tb3_{idx}": [*init_pos[idx], 0] for idx in range(robot_num)}
 
- return init_pos_gaz
+    return init_pos_gaz
 
 
 

@@ -36,6 +36,11 @@ class converter(Node):
         self.declare_parameter("yaml_name", "formation4_mixed")
         self.yaml_name = self.get_parameter("yaml_name").value
 
+        if not os.path.exists(f'{src}{self.yaml_name}.yml'):
+            print(f"File {self.yaml_name} does not exist.")
+            self.yaml_name = "formation4_mixed"
+
+            
         self.get_logger().info(
             'Convert evironment obstacle file')
         with open(f'{src}{self.yaml_name}.yml', 'r') as file:
