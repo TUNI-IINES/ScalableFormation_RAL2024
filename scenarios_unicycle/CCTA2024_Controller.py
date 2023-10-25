@@ -1,5 +1,4 @@
-from control_lib.go_to_goal import Pcontrol
-# from control_lib.cbf_single_integrator import cbf_si, np
+from control_lib.go_to_goal import Pcontrol, waypoint_planner
 from control_lib.cbf_si_v2 import cbf_si, np
 from nebolab_experiment_setup import NebolabSetup
 
@@ -11,40 +10,39 @@ class SceneSetup:
     General variable needed to run the controller
     Can be adjusted later by set new value on the class variable
     """
-    robot_num = 4
+    robot_num: int = 4
     # Set initial formation position --> Order: red, blue, green, orange
-    init_pos = np.array([[-1, 1.25, 0],
-                         [-1, 0.75, 0],
-                         [-1.02, -0.75, 0],
-                         [-1.02, -1.25, 0]])
-    init_theta = np.array([0, 0, 0, 0])
+    init_pos: np.array = np.array([[-1, 1.25, 0],
+                                   [-1, 0.75, 0],
+                                   [-1.02, -0.75, 0],
+                                   [-1.02, -1.25, 0]])
+    init_theta: np.array = np.array([0, 0, 0, 0])
     # Set desired formation position --> rotated -90deg in final configuration
-    goal_pos = np.array([[1.25, -1, 0],
-                         [0.75, -1, 0],
-                         [0.75, 1, 0],
-                         [1.25, 1, 0]])
+    goal_pos: np.array = np.array([[1.25, -1, 0],
+                                   [0.75, -1, 0],
+                                   [0.75, 1, 0],
+                                   [1.25, 1, 0]])
     # Here we assume any final pose is OK
-    robot_color = list()
+    robot_color: [] = []
 
     # OBSTACLE PARAMETER
-    static_circle_obstacles = [
-        {"pos": np.array([-0.4, 0.6, 0]), "r": 0.3},
-        {"pos": np.array([-0.5, -1., 0]), "r": 0.3}]
-    static_obstacles = list()
+    static_circle_obstacles: [] = [{"pos": np.array([-0.4, 0.6, 0]), "r": 0.3},
+                                   {"pos": np.array([-0.5, -1., 0]), "r": 0.3}]
+    static_obstacles: [] = []
 
     # FORMATION PARAMETER
     # distance to keep between each robot
-    form_A = np.array([[0, 0.5, 0, 0],
-                       [0.5, 0, 0, 0],
-                       [0, 0, 0, 0.5],
-                       [0, 0, 0.5, 0]])
-    form_A_eps = form_A.copy()  # adjacent matrix for epsilon
-    form_A_edges = np.array([1, 1, 1, 1])  # number of edges on each vertex
-    max_form_epsilon = 0.2  # tolerance for maintaining distance in form_A
-    hull = None
+    form_A: np.array = np.array([[0, 0.5, 0, 0],
+                                 [0.5, 0, 0, 0],
+                                 [0, 0, 0, 0.5],
+                                 [0, 0, 0.5, 0]])
+    form_A_eps: np.array = form_A.copy()  # adjacent matrix for epsilon
+    form_A_edges: np.array = np.array([1, 1, 1, 1])  # number of edges on each vertex
+    max_form_epsilon: float = 0.2  # tolerance for maintaining distance in form_A
+    hull: np.array = None
 
-    form_num = 2
-    form_id = np.array([0, 0, 1, 1])  # Identifier for each group
+    form_num: int = 2
+    form_id: np.array = np.array([0, 0, 1, 1])  # Identifier for each group
     # Define the leader ID in each formation and the initial offset to major axis
     form_leader_id = np.array([0, 2])
     form_leader_offset = np.array([0., 0.])
@@ -55,30 +53,25 @@ class SceneSetup:
     USECBF_BOUNDARY = False  # Control input boundary
     USECBF_STATICOBS = False  # Static circular obstacle
     USECBF_FORMATION = False  # Formation Maintenance
-    USECBF_ELLIPSEAV = False  # Robot-Formation Ellipse
-    USECBF_STATIC_FF_ELLIPSE = False  # Not in use, Formation-Formation Ellipses
-    USECBF_STATIC_FF_CIRCLE = False  # Formation-Formation Circle
-    USECBF_FIXED_FFC_RADIUS = False  # Formation-Formation Circle with Fixed Radius
     USECBF_LIDAR = False  # LiDAR option
     USECBF_LIDAR_SHARING = False
 
     use_unicycle = True
 
-    Pgain = 0.8  # for go-to-goal
-    eps_gain = 1.  # for achieving eps → 0
-    eps_weight = 1.  # priority in optimizing function
-    initial_eps = 0.5  # ratio
-    gamma_staticObs = 10
-    gamma_form = 10
-    gamma_ellipsAv = 0.2
-    default_range_data = np.zeros((0, 0))
-    sensor_resolution = 360  # LiDAR resolution, shall not change
-    default_range = 1.  # LiDAR sensor range
-    kappa = 0.16  # relative active obstacles threshold
-    d_obs = 0.4  # minimum distance to obstacle, LiDAR case
-    robot_offset = 0.
+    Pgain: float = 0.8  # for go-to-goal
+    eps_gain: float = 1.  # for achieving eps → 0
+    eps_weight: float = 1.  # priority in optimizing function
+    initial_eps: float = 0.5  # ratio
+    gamma_staticObs: float = 10
+    gamma_form: float = 10
+    default_range_data: np.array = np.zeros((0, 0))
+    sensor_resolution: int = 360  # LiDAR resolution, shall not change
+    default_range: float = 1.  # LiDAR sensor range
+    kappa: float = 0.16  # relative active obstacles threshold
+    d_obs: float = 0.4  # minimum distance to obstacle, LiDAR case
+    robot_offset: float = 0.
 
-    speed_limit = 0.
+    speed_limit: float = 0.
 
     # define sensing range (to ease optimization)
     sr = 10  # in meter # It needs to be greater than major length
@@ -94,9 +87,18 @@ class Controller:
         """
         Initialize Controller
         """
-        # self.cbf = [cbf_si(neighbors=SceneSetup.form_A_edges[i]) for i in range(SceneSetup.robot_num)]
-        # print('SceneSetup.form_A_eps', SceneSetup.form_A_eps)
+        # Re-estimate in_neighbor, for now assume formation graph is identical with communication graph
+        self.__inNeigh = [np.where(SceneSetup.form_A[:, i] > 0)[0] for i in range(SceneSetup.robot_num)]
+        # Setup cbf
         self.cbf = [cbf_si(neighbor_eps=SceneSetup.form_A_eps[i]) for i in range(SceneSetup.robot_num)]
+
+        if SceneSetup.USE_WAYPOINTS:
+            # Setup Waypoint manager
+            self.wp_manager = {}
+            for f_id in range(SceneSetup.form_num):
+                wp = SceneSetup.form_waypoints[f_id]
+                orient = SceneSetup.form_wp_orient[f_id]
+                self.wp_manager[f_id] = waypoint_planner(wp, orient)
 
     def compute_control(self, feedback, computed_control):
         """
@@ -105,10 +107,25 @@ class Controller:
         :param feedback: feedback class, contains all the required information for the controller computation
         :param computed_control: is also the output
         """
-        # Re-estimate in_neighbor, for now assume formation graph is identical with communication graph
-        self.__inNeigh = [np.where(SceneSetup.form_A[:, i] > 0)[0] for i in range(SceneSetup.robot_num)]
         # Reset monitor properties
         computed_control.reset_monitor()
+
+        if SceneSetup.USE_WAYPOINTS:
+            # Compute centroid centralized (for now. TODO: distribute later)
+            rot = lambda alpha: np.array([[np.cos(alpha), -np.sin(alpha), 0.],
+                                          [np.sin(alpha), np.cos(alpha), 0.],
+                                          [0., 0., 1.]])
+
+            for f_id in range(SceneSetup.form_num):
+                form_pos, form_th = feedback.get_form_i_state(f_id)  # get centroid
+                # Recheck waypoint
+                is_update, new_wp, new_orient = \
+                    self.wp_manager[f_id].check_wp_status(form_pos, SceneSetup.wp_switch_radius)
+                if is_update:  # update new goal position for each robot
+                    # SceneSetup.form_waypoints.pop(0)
+                    for idx in range(SceneSetup.robot_num):
+                        if f_id == SceneSetup.form_id[idx]:
+                            SceneSetup.goal_pos[idx, :] = new_wp + rot(new_orient) @ SceneSetup.struct[idx]
 
         for i in range(SceneSetup.robot_num):
             # Collect States
@@ -151,7 +168,8 @@ class Controller:
                         j_q = feedback.get_lahead_i_pos(j)
 
                     h_fml, h_fmu, h_eps_floor, h_eps_ceil = self.cbf[i].add_maintain_distance_with_distinct_epsilon(
-                        current_q, j_q, SceneSetup.form_A[i, j], SceneSetup.max_form_epsilon[i][j], i_eps[j], j_eps[i], j,
+                        current_q, j_q, SceneSetup.form_A[i, j], SceneSetup.max_form_epsilon[i][j], i_eps[j], j_eps[i],
+                        j,
                         gamma=10, power=3)
 
                     # store h value
@@ -162,16 +180,15 @@ class Controller:
 
             # Non-circular Robot-Obstacle Avoidance
             if SceneSetup.USECBF_LIDAR:
-
                 # Get the LIDAR data
                 range_data = feedback.get_robot_i_range_data(i)  # [(0 → 1)]
                 range_points = feedback.get_robot_i_detected_pos(i)  # [(obs_x, obs_y, 0)]
                 detected_obs_points = range_points[range_data < 0.99 * SceneSetup.default_range]  # filtered
 
                 min_h = self.cbf[i].add_avoid_lidar_detected_obs(
-                        detected_obs_points, current_q,
-                        SceneSetup.kappa, SceneSetup.d_obs,
-                        gamma=SceneSetup.gamma_staticObs
+                    detected_obs_points, current_q,
+                    SceneSetup.kappa, SceneSetup.d_obs,
+                    gamma=SceneSetup.gamma_staticObs
                 )
 
                 # store h value
@@ -305,6 +322,7 @@ class FeedbackInformation:
     """
     Encapsulate the feedback passing from sim/experiment into controller
     """
+
     def __init__(self):
         """
         Initialize the formation array, POI, feedback
@@ -315,11 +333,6 @@ class FeedbackInformation:
         # Initialize lookahead position for all robots
         self.__all_lahead_pos = np.zeros([SceneSetup.robot_num, 3])
         self.__all_robot_epsilon = SceneSetup.form_A_eps.copy()
-        if SceneSetup.USECBF_STATIC_FF_CIRCLE:
-            if SceneSetup.USECBF_FIXED_FFC_RADIUS:
-                self.__all_form_radius = np.array(SceneSetup.major_l).reshape(SceneSetup.form_num, 1) / 2
-            else:
-                self.__all_form_radius = np.zeros([SceneSetup.form_num, 1])
 
         # Set the value based on initial values
         self.set_feedback(SceneSetup.init_pos, SceneSetup.init_theta)
@@ -330,11 +343,6 @@ class FeedbackInformation:
             self.__all_detected_pos = np.zeros((n, m, 3))
             self.__sensing_linspace = np.linspace(0., 2 * np.pi, num=m, endpoint=False)
             self.set_sensor_reading(SceneSetup.default_range_data)
-
-            if SceneSetup.USECBF_LIDAR_SHARING:
-                # A dictionary with keys as 'ij' representing the list of obstacles position as values
-                # in the shared region of i-th and j-th robots
-                self.__shared_detected_pos = dict()
 
         self.__all_robot_epsilon_hist = self.__all_robot_epsilon.copy().reshape(SceneSetup.form_A_eps.shape[0],
                                                                                 SceneSetup.form_A_eps.shape[1], 1)
@@ -382,9 +390,6 @@ class FeedbackInformation:
             leader_pos = self.__all_lahead_pos[SceneSetup.form_leader_id[i_form], :]
             self.__all_form_centroid[i_form, :], self.__all_form_theta[i_form, :] = \
                 self.__compute_ellipse_formation(form_robots_pos, leader_pos, SceneSetup.form_leader_offset[i_form])
-
-        if SceneSetup.USECBF_STATIC_FF_CIRCLE and not SceneSetup.USECBF_FIXED_FFC_RADIUS:
-            self.__update_circle_radius()
 
         # TODO: use the SceneSetup.formA to make the above adjustable
         # NOTE: I think we can set the compute_ellipse_form2 to directly check for all existing id
@@ -556,5 +561,5 @@ class FeedbackInformation:
         """
         key = f'{i}_{j}'
         if key not in self.__shared_detected_pos:
-            self.__shared_detected_pos[key] = np.zeros((0,3))
+            self.__shared_detected_pos[key] = np.zeros((0, 3))
         return self.__shared_detected_pos[key]

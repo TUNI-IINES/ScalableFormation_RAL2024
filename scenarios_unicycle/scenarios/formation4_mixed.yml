@@ -42,7 +42,7 @@ scenario:
       - [ 0.0, 0.0, 0.0, 0.0 ]
     waypoints:
       # Each line as a set of waypoints (position[3] & orientation[1]) of each formation
-      - [ [ 8.5, 0.0, 0.0, 0.0 ] ]
+      - [ [ 1.0, 0.0, 0.0, 0.0 ], [ 8.5, 0.0, 0.0, 0.0 ] ]
     wp_switch_radius: 0.1
 control:
   features:
@@ -66,7 +66,7 @@ control:
 setup:
   Ts: 0.02
   tmax: 120
-  save_animate: true
+  save_animate: false
   save_data: true
   plot_saved_data: true
   timeseries_window: 1

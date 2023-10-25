@@ -76,8 +76,8 @@ def import_scenario():
     SceneSetup.init_theta = np.array([0 for _ in range(SceneSetup.robot_num)])
 
     SceneSetup.goal_pos = np.array([
-        SceneSetup.form_waypoints[SceneSetup.form_id[idx]][-1]
-        + rot(SceneSetup.form_wp_orient[SceneSetup.form_id[idx]][-1]) @ SceneSetup.struct[idx]
+        SceneSetup.form_waypoints[SceneSetup.form_id[idx]][0]
+        + rot(SceneSetup.form_wp_orient[SceneSetup.form_id[idx]][0]) @ SceneSetup.struct[idx]
         for idx in range(SceneSetup.robot_num)
     ])
 
@@ -126,7 +126,7 @@ class SimSetup:
     now = datetime.now()
     dt_string = now.strftime("%Y%m%d_%H%M%S")
     desc = "testVis"
-    desc = "mixed"
+    # desc = "mixed"
     sim_defname = f'animation_result/{dt_string}_{desc}/sim2D_FormationObstacleLidar'
     sim_fname_output = r'' + sim_defname + '.gif'
     sim_trajTail = None  # Show all trajectory
