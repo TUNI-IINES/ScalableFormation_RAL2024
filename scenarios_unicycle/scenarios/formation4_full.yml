@@ -45,6 +45,7 @@ scenario:
       # Each waypoint is defined
       - [ [ 6.0, 0.0, 0.0, 0.0 ],
           [ 8.5, -2.0, 0.0, -1.5708 ],
+          [ 6.0, -3.0, 0.0, 0.0 ],
           [ 0.0, -3.0, 0.0, 0.0 ] ]
     wp_switch_radius: 0.1
 control:
