@@ -41,6 +41,8 @@ scenario:
           [ 1.0, 0, 0.2, 0 ] ]
     major_l: [ 1.0 ]
     minor_l: [ 1.0 ]
+
+    
   positions:
     initial_positions:
       # Each line as the initial position[3] & orientation[1] of each formation CENTER
