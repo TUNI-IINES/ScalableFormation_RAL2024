@@ -5,31 +5,33 @@ from distutils.dir_util import copy_tree
 import numpy as np
 from rclpy.node import Node
 
-SRC = "/home/dl/turtlebot3_ws/src/turtlebot3_simulations/turtlebot3_gazebo/scripts/scenarios_unicycle/scenarios/"
-DST = '/home/dl/turtlebot3_ws/src/turtlebot3_simulations/turtlebot3_gazebo/models/'
-WLD = f"/home/dl/turtlebot3_ws/src/turtlebot3_simulations/turtlebot3_gazebo/worlds/empty_worlds"
+SRC = f"/home/kidovn/turtlebot3_ws/src/turtlebot3_simulations/turtlebot3_gazebo/scripts/scenarios_unicycle/scenarios/"
+DST = f"/home/kidovn/turtlebot3_ws/src/turtlebot3_simulations/turtlebot3_gazebo/models/"
+WLD = f"/home/kidovn/turtlebot3_ws/src/turtlebot3_simulations/turtlebot3_gazebo/worlds/empty_worlds"
 # yaml_name = os.environ['YAML_NAME']
 
 description = 'This SDF file is for enlarging environment'
 
+
 class Wall:
-        def __init__(self, vertex1, vertex2):
-            self.__vertex1 = np.array(vertex1[:2])
-            self.__vertex2 = np.array(vertex2[:2])
+    def __init__(self, vertex1, vertex2):
+        self.__vertex1 = np.array(vertex1[:2])
+        self.__vertex2 = np.array(vertex2[:2])
 
-        @property
-        def center(self):
-            return (self.__vertex1 + self.__vertex2) / 2
+    @property
+    def center(self):
+        return (self.__vertex1 + self.__vertex2) / 2
 
-        @property
-        def length(self):
-            return np.linalg.norm(self.__vertex2 - self.__vertex1)
+    @property
+    def length(self):
+        return np.linalg.norm(self.__vertex2 - self.__vertex1)
 
-        @property
-        def angle(self):
-            return np.arctan2(self.__vertex2[1] - self.__vertex1[1],
-                                self.__vertex2[0] - self.__vertex1[0])
-        
+    @property
+    def angle(self):
+        return np.arctan2(self.__vertex2[1] - self.__vertex1[1],
+                          self.__vertex2[0] - self.__vertex1[0])
+
+
 class converter(Node):
     def __init__(self, src, dst, wld):
         super().__init__("sdf_converter")
@@ -40,7 +42,6 @@ class converter(Node):
             print(f"File {self.yaml_name} does not exist.")
             self.yaml_name = "formation4_mixed"
 
-            
         self.get_logger().info(
             'Convert evironment obstacle file')
         with open(f'{src}{self.yaml_name}.yml', 'r') as file:
@@ -59,8 +60,8 @@ class converter(Node):
         full_path = os.path.join(src, file_name)
         with open(full_path, 'w') as file:
             file.write(self.yaml_name)
-        
-        #TODO: Copy folder/files
+
+        # TODO: Copy folder/files
         copy_tree(f"{dst}turtlebot3_enlarge", f"{dst}{self.yaml_name}")
 
         with open(f'{dst}{self.yaml_name}/model.sdf', 'w') as file:
@@ -159,7 +160,6 @@ class converter(Node):
             </world>
             </sdf>
             ''')
-    
 
 
 def main(args=None):
@@ -167,7 +167,7 @@ def main(args=None):
 
     node = converter(src=SRC, dst=DST, wld=WLD)
     try:
-        rclpy.spin(node) 
+        rclpy.spin(node)
     except KeyboardInterrupt:
         pass
     node.get_logger().info("Done! Shutting down node.")
