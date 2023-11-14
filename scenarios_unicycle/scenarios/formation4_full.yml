@@ -1,4 +1,3 @@
----
 # Order always is Scenario → Control → Setup
 scenario:
   obstacles:
@@ -56,7 +55,7 @@ control:
   parameters:
     d_obs: 0.1
     speed_limit: 0.15
-    initial_eps: 0.4
+    initial_eps: 0.5
     eps_gain: 0.7
     eps_weight: 0.1
     sensor_resolution: 360
@@ -76,4 +75,3 @@ setup:
   eps_visualization: true
   DETECT_OTHER_ROBOTS: true
   bound_vertices: 8
-  robot_rad: 0.1
