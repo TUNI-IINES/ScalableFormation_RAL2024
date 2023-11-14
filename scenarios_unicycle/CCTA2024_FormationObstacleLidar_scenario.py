@@ -16,7 +16,7 @@ from simulator.detect_obstacle import DetectObstacle
 # -----------------------------------------------------------------------
 
 def import_scenario():
-    with open('scenarios_unicycle/scenarios/formation4_mixed.yml', 'r') as file:
+    with open('scenarios_unicycle/scenarios/formation4_exp.yml', 'r') as file:
         import yaml
         scenario, control, setup = yaml.safe_load(file).values()
 
@@ -125,8 +125,8 @@ class SimSetup:
 
     now = datetime.now()
     dt_string = now.strftime("%Y%m%d_%H%M%S")
-    desc = "testVis"
-    # desc = "mixed"
+    # desc = "testVis"
+    desc = "exp"
     sim_defname = f'animation_result/{dt_string}_{desc}/sim2D_FormationObstacleLidar'
     sim_fname_output = r'' + sim_defname + '.gif'
     sim_trajTail = None  # Show all trajectory
@@ -304,15 +304,15 @@ class SimulationCanvas:
         array_max_eps = np.delete(array_max_eps, 0)
         self.__prev_fill = list()
 
-        for idx, dist in enumerate(array_req_dist):
-            if idx == 0:  # only put 1 label
-                self.__ax_dist.fill_between([0, SimSetup.tmax], [dist - array_max_eps[idx]] * 2,
-                                            [dist + array_max_eps[idx]] * 2,
-                                            alpha=0.12, color='k', linewidth=0, label='specified distance')
-            else:
-                self.__ax_dist.fill_between([0, SimSetup.tmax], [dist - array_max_eps[idx]] * 2,
-                                            [dist + array_max_eps[idx]] * 2,
-                                            alpha=0.12, color='k', linewidth=0)
+        # for idx, dist in enumerate(array_req_dist):
+        #     if idx == 0:  # only put 1 label
+        #         self.__ax_dist.fill_between([0, SimSetup.tmax], [dist - array_max_eps[idx]] * 2,
+        #                                     [dist + array_max_eps[idx]] * 2,
+        #                                     alpha=0.12, color='k', linewidth=0, label='specified distance')
+        #     else:
+        #         self.__ax_dist.fill_between([0, SimSetup.tmax], [dist - array_max_eps[idx]] * 2,
+        #                                     [dist + array_max_eps[idx]] * 2,
+        #                                     alpha=0.12, color='k', linewidth=0)
         # set y-axis
         self.__ax_dist.set(ylim=(min(array_req_dist) - max(array_max_eps) - 0.1,
                                  max(array_req_dist) + max(array_max_eps) + 0.1))

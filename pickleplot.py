@@ -284,36 +284,6 @@ def scenario_pkl_plot():
         plt.savefig(pngname, bbox_inches="tight", dpi=300)
         print('export figure: ' + pngname, flush=True)
 
-    # # PLOT THE H STATIC_FF_CIRCLE
-    # # ---------------------------------------------------
-    if SceneSetup.USECBF_STATIC_FF_CIRCLE:
-        fig = plt.figure(figsize=figure_short)
-        plt.rcParams.update({'font.size': FS})
-        # plt.rcParams['text.usetex'] = True
-        ax = plt.gca()
-        # plot
-        plot_pickle_log_time_series_batch_keys(ax, __stored_data, __end_idx, 'h_static_ffc_')
-        ax.set(xlabel="t [s]", ylabel="h_static_ffc")
-        ax.legend(loc='best', prop={'size': leg_size})
-        # plt.show()
-        pngname = SimSetup.sim_defname + '_h_static_ffc.png'
-        plt.savefig(pngname, bbox_inches="tight", dpi=300)
-        print('export figure: ' + pngname, flush=True)
-
-    if SceneSetup.USECBF_ELLIPSEAV:
-        fig = plt.figure(figsize=figure_short)
-        plt.rcParams.update({'font.size': FS})
-        # plt.rcParams['text.usetex'] = True
-        ax = plt.gca()
-        # plot
-        plot_pickle_log_time_series_batch_keys(ax, __stored_data, __end_idx, 'h_ellipseav_')
-        ax.set(xlabel="t [s]", ylabel="h_ellipseav")
-        ax.legend(loc='best', prop={'size': leg_size})
-        # plt.show()
-        pngname = SimSetup.sim_defname + '_h_ellipseav.png'
-        plt.savefig(pngname, bbox_inches="tight", dpi=300)
-        print('export figure: ' + pngname, flush=True)
-
     # PLOT THE DISTANCE
     # ---------------------------------------------------
     fig = plt.figure(figsize=figure_short)
