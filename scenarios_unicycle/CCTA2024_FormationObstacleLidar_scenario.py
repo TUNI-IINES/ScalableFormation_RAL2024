@@ -191,7 +191,7 @@ class SimulationCanvas:
                 all_robots_theta[i] = state['theta']
 
             if self.__cur_time % SimSetup.LiDAR_rate < SimSetup.Ts:
-                print(self.__cur_time)
+                # print(self.__cur_time)
                 for i in range(SceneSetup.robot_num):
                     if SimSetup.DETECT_OTHER_ROBOTS:
                         # Update robot shape to be used for range detection

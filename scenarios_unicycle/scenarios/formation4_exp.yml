@@ -4,8 +4,8 @@ scenario:
   obstacles:
     # Each line as an obstacle, closed polygon.
     # Each array within as a vertex of the obstacle.
-    - [ [ -0.48, 1.0, 0.0 ], [ -0.33, 1.09, 0.0 ], [ 0.33, 1.09, 0.0 ], [ 0.48, 1.0, 0.0 ], [ 0.33, 0.91, 0.0 ], [ -0.33, 0.91, 0.0 ], [ -0.48, 1.0, 0.0 ] ]
-    - [ [ -0.48, 0.0, 0.0 ], [ -0.33, 0.09, 0.0 ], [ 0.33, 0.09, 0.0 ], [ 0.48, 0.0, 0.0 ], [ 0.33, -0.09, 0.0 ], [ -0.33, -0.09, 0.0 ], [ -0.48, 0.0, 0.0 ] ]
+    - [ [ -0.48, 0.6, 0.0 ], [ -0.33, 0.69, 0.0 ], [ 0.33, 0.69, 0.0 ], [ 0.48, 0.6, 0.0 ], [ 0.33, 0.51, 0.0 ], [ -0.33, 0.51, 0.0 ], [ -0.48, 0.6, 0.0 ] ]
+    - [ [ -0.48, -0.4, 0.0 ], [ -0.33, -0.31, 0.0 ], [ 0.33, -0.31, 0.0 ], [ 0.48, -0.4, 0.0 ], [ 0.33, -0.49, 0.0 ], [ -0.33, -0.49, 0.0 ], [ -0.48, -0.4, 0.0 ] ]
     #- [ [ -1.25, 1.5, 0.0 ], [ -1.5, 1.25, 0.0 ], [ -1.25, 1.0, 0.0 ], [ 0.75, 1.0, 0.0 ], [ 1.0, 1.25, 0.0 ], [ 0.75, 1.5, 0.0 ], [ -1.25, 1.5, 0.0 ] ]
     #- [ [ -1.25, 0.0, 0.0 ], [ -1.5, -0.25, 0.0 ], [ -1.25, -0.5, 0.0 ], [ 0.75, -0.5, 0.0 ], [ 1.0, -0.25, 0.0 ], [ 0.75, 0.0, 0.0 ], [ -1.25, 0.0, 0.0 ] ]
   formations:
@@ -40,18 +40,18 @@ scenario:
       # Each line as the initial position[3] & orientation[1] of each formation CENTER
       # Robot Position (Global) = Rotation Matrix (Orientation) x Structs (Local) x Form Scaling + Center Position (Translation)
       # Read more: https://community.mrtrix.org/t/registration-transformation-regridding-concepts/3684
-      - [ -1.2, 0.5, 0.0, 0.0 ]
+      - [ -1.2, 0.1, 0.0, 0.0 ]
     waypoints:
       # Each line as a set of waypoints (position[3] & orientation[1]) of each formation
       # Each waypoint is defined
-      - [ [ 1.0, 0.5, 0.0, 0.0 ],
-          [ 1.25, 0.8, 0.0, 0.0 ],
-          [ 1.25, 0.4, 0.0, -1.5708 ],
-          [ 1.25, 0.0, 0.0, -3.1415 ],
-          [ 1.0, 0.01, 0.0, -3.1415 ],
-          [ -1.0, -0.01, 0.0, -3.1415 ],
-          [ -0.8, 0.5, 0.0, 1.5708 ],
-          [ -1.2, 0.5, 0.0, 0.0 ]
+      - [ [ 1.0, 0.1, 0.0, 0.0 ],
+          [ 1.25, 0.4, 0.0, 0.0 ],
+          [ 1.25, 0.0, 0.0, -1.5708 ],
+          [ 1.25, -0.4, 0.0, -3.1415 ],
+          [ 1.0, -0.39, 0.0, -3.1415 ],
+          [ -1.0, -0.41, 0.0, -3.1415 ],
+          [ -0.8, 0.1, 0.0, 1.5708 ],
+          [ -1.2, 0.1, 0.0, 0.0 ]
       ]
     wp_switch_radius: 0.05
 control:
@@ -61,7 +61,7 @@ control:
     USECBF_LIDAR: true
     USECBF_FORMATION: true
   parameters:
-    d_obs: 0.1
+    d_obs: 0.15
     speed_limit: 0.15
     initial_eps: 0.1
     eps_gain: 0.8
@@ -69,7 +69,7 @@ control:
     sensor_resolution: 360
     default_range: 3.5
     kappa: 0.08
-    gamma_staticObs: 200
+    gamma_staticObs: 2000
     # This is for the most-outer walls
     FIELD_X: [ -2.5, 2.5 ]
     FIELD_Y: [ -1.5, 1.5 ]
@@ -77,11 +77,11 @@ setup:
   Ts: 0.02
   LiDAR_rate: 0.2
   tmax: 135
-  save_animate: false
+  save_animate: true
   save_data: true
   plot_saved_data: true
   timeseries_window: 1
   eps_visualization: true
   DETECT_OTHER_ROBOTS: true
   bound_vertices: 8
-  robot_rad: 0.1
+  robot_rad: 0.105

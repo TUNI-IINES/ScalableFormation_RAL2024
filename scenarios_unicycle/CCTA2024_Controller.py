@@ -185,9 +185,9 @@ class Controller:
                 # print(range_data)
                 range_points = feedback.get_robot_i_detected_pos(i)  # [(obs_x, obs_y, 0)]
                 range_data = np.array([np.linalg.norm(current_q - point, 2) for point in range_points])
-                detected_obs_points = range_points[(range_data < 0.99 * SceneSetup.default_range) & (range_data != 0)]  # filtered
+                detected_obs_points = range_points[(range_data < 0.99 * SceneSetup.default_range) & (range_data > 0.13)]  # filtered
 
-                if i == 0: print(i, range_points[0])
+                # if i == 0: print(i, range_points[0])
 
                 min_h = self.cbf[i].add_avoid_lidar_detected_obs(
                     detected_obs_points, current_q,
