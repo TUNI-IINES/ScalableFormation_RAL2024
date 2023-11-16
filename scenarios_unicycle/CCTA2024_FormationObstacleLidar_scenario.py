@@ -461,7 +461,8 @@ class ExperimentEnv():
 
         eps_array = control_input.get_all_epsilons()
         feedback.set_all_eps(eps_array)
-        feedback.set_sensor_reading(self.scan_LIDAR)
+        if self.__cur_time % SimSetup.LiDAR_rate < SimSetup.Ts:
+            feedback.set_sensor_reading(self.scan_LIDAR)
 
     def get_i_vlin_omega(self, i, control_input):
         # Inverse Look up ahead Mapping (u_z remain 0.)
