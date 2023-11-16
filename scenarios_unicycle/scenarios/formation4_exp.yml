@@ -4,7 +4,7 @@ scenario:
   obstacles:
     # Each line as an obstacle, closed polygon.
     # Each array within as a vertex of the obstacle.
-    - [ [ -0.48, 1.0, 0.0 ], [ -0.33, 1.09, 0.0 ], [ 0.33, 1.09, 0.0 ], [ 0.48, 1.09, 0.0 ], [ 0.33, 0.91, 0.0 ], [ -0.33, 0.91, 0.0 ], [ -0.48, 1.0, 0.0 ] ]
+    - [ [ -0.48, 1.0, 0.0 ], [ -0.33, 1.09, 0.0 ], [ 0.33, 1.09, 0.0 ], [ 0.48, 1.0, 0.0 ], [ 0.33, 0.91, 0.0 ], [ -0.33, 0.91, 0.0 ], [ -0.48, 1.0, 0.0 ] ]
     - [ [ -0.48, 0.0, 0.0 ], [ -0.33, 0.09, 0.0 ], [ 0.33, 0.09, 0.0 ], [ 0.48, 0.0, 0.0 ], [ 0.33, -0.09, 0.0 ], [ -0.33, -0.09, 0.0 ], [ -0.48, 0.0, 0.0 ] ]
     #- [ [ -1.25, 1.5, 0.0 ], [ -1.5, 1.25, 0.0 ], [ -1.25, 1.0, 0.0 ], [ 0.75, 1.0, 0.0 ], [ 1.0, 1.25, 0.0 ], [ 0.75, 1.5, 0.0 ], [ -1.25, 1.5, 0.0 ] ]
     #- [ [ -1.25, 0.0, 0.0 ], [ -1.5, -0.25, 0.0 ], [ -1.25, -0.5, 0.0 ], [ 0.75, -0.5, 0.0 ], [ 1.0, -0.25, 0.0 ], [ 0.75, 0.0, 0.0 ], [ -1.25, 0.0, 0.0 ] ]
@@ -26,7 +26,7 @@ scenario:
           [ 0.707, 0, 0.707, 0 ] ]
     # 1xN matrix
     # Each element as formation's scaling, major and minor lengths of the ellipse
-    form_scaling: [ 0.7 ]
+    form_scaling: [ 0.8 ]
     max_form_epsilon:
       # Each array as an Adjacency matrix of each formation
       - [ [ 0, 0.2, 1.0, 0.8 ],
@@ -45,12 +45,12 @@ scenario:
       # Each line as a set of waypoints (position[3] & orientation[1]) of each formation
       # Each waypoint is defined
       - [ [ 1.0, 0.5, 0.0, 0.0 ],
-          [ 1.25, 0.65, 0.0, 0.0 ],
-          [ 1.25, 0.35, 0.0, -1.5708 ],
-          [ 1.25, 0.05, 0.0, -3.1415 ],
+          [ 1.25, 0.8, 0.0, 0.0 ],
+          [ 1.25, 0.4, 0.0, -1.5708 ],
+          [ 1.25, 0.0, 0.0, -3.1415 ],
           [ 1.0, 0.01, 0.0, -3.1415 ],
           [ -1.0, -0.01, 0.0, -3.1415 ],
-          [ -1.2, 0.5, 0.0, 1.5708 ],
+          [ -0.8, 0.5, 0.0, 1.5708 ],
           [ -1.2, 0.5, 0.0, 0.0 ]
       ]
     wp_switch_radius: 0.05
@@ -63,19 +63,20 @@ control:
   parameters:
     d_obs: 0.1
     speed_limit: 0.15
-    initial_eps: 0.2
-    eps_gain: 0.6
+    initial_eps: 0.1
+    eps_gain: 0.8
     eps_weight: 0.1
     sensor_resolution: 360
-    default_range: 1.0
-    kappa: 0.15
-    gamma_staticObs: 10000
+    default_range: 3.5
+    kappa: 0.08
+    gamma_staticObs: 200
     # This is for the most-outer walls
     FIELD_X: [ -2.5, 2.5 ]
     FIELD_Y: [ -1.5, 1.5 ]
 setup:
   Ts: 0.02
-  tmax: 150
+  LiDAR_rate: 0.2
+  tmax: 135
   save_animate: false
   save_data: true
   plot_saved_data: true
