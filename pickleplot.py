@@ -957,14 +957,17 @@ def exp_pkl_plot():
     # plt.rcParams['text.usetex'] = True
     ax = plt.gca()
     # plot
+    ## This is for experiment
     # __stored_data['h_lidar_1'] = [(v + SceneSetup.d_obs ** 2) ** 0.5 if v is not None else v for v in __stored_data['h_staticobs_0']][25:]
     # __stored_data['h_lidar_2'] = [(v + SceneSetup.d_obs ** 2) ** 0.5 if v is not None else v for v in __stored_data['h_staticobs_1']][25:]
     # __stored_data['h_lidar_3'] = [(v + SceneSetup.d_obs ** 2) ** 0.5 if v is not None else v for v in __stored_data['h_staticobs_2']][25:]
     # __stored_data['h_lidar_4'] = [(v + SceneSetup.d_obs ** 2) ** 0.5 if v is not None else v for v in __stored_data['h_staticobs_3']][25:]
+    # This is for simulation
     __stored_data['lidar_0'][:5] = [v for v in __stored_data['lidar_0']][5:10]
     __stored_data['lidar_1'][:5] = [v for v in __stored_data['lidar_1']][5:10]
     __stored_data['lidar_2'][:5] = [v for v in __stored_data['lidar_2']][5:10]
     __stored_data['lidar_3'][:5] = [v for v in __stored_data['lidar_3']][5:10]
+    # Swap variables to get start index at 1
     __stored_data['lidar_4'] = __stored_data['lidar_3']
     __stored_data['lidar_3'] = __stored_data['lidar_2']
     __stored_data['lidar_2'] = __stored_data['lidar_1']
@@ -979,6 +982,7 @@ def exp_pkl_plot():
     pngname = SimSetup.sim_defname + '_lidar.png'
     plt.savefig(pngname, bbox_inches="tight", dpi=300)
     print('export figure: ' + pngname, flush=True)
+
     # # PLOT THE EPS
     # # ---------------------------------------------------
     if SceneSetup.USECBF_FORMATION:
@@ -1039,38 +1043,14 @@ def exp_pkl_plot():
         pngname = SimSetup.sim_defname + '_h_fmu.png'
         plt.savefig(pngname, bbox_inches="tight", dpi=300)
         print('export figure: ' + pngname, flush=True)
-        #
-        # # # PLOT THE H FML
-        # # # ---------------------------------------------------
-        # fig = plt.figure(figsize=figure_short)
-        # fig, ax = plt.subplots(nrows=3, ncols=1, sharex=True)
-        # plt.rcParams.update({'font.size': FS})
-        # # plt.rcParams['text.usetex'] = True
-        # # ax = plt.gca()
-        # # plot
-        # # __stored_data['h_fml_0_1'] = [(v + SceneSetup.d_obs ** 2) ** 0.5 if v is not None else v for v in __stored_data['h_fml_0_1']]
-        # # __stored_data['h_fml_2_3'] = [(v + SceneSetup.d_obs ** 2) ** 0.5 if v is not None else v for v in __stored_data['h_fml_2_3']]
-        # # __stored_data['h_fml_1_2'] = [(v + SceneSetup.d_obs ** 2) ** 0.5 if v is not None else v for v in __stored_data['h_fml_1_2']]
-        # # __stored_data['h_fml_0_3'] = [(v + SceneSetup.d_obs ** 2) ** 0.5 if v is not None else v for v in __stored_data['h_fml_0_3']]
-        # # __stored_data['h_fml_0_2'] = [(v + SceneSetup.d_obs ** 2) ** 0.5 if v is not None else v for v in __stored_data['h_fml_0_2']]
-        #
-        # plot_pickle_log_time_series_batch_keys(ax[0], __stored_data, __end_idx, 'h_fml_0_1')
-        # plot_pickle_log_time_series_batch_keys(ax[0], __stored_data, __end_idx, 'h_fml_2_3')
-        # plot_pickle_log_time_series_batch_keys(ax[1], __stored_data, __end_idx, 'h_fml_1_2')
-        # plot_pickle_log_time_series_batch_keys(ax[1], __stored_data, __end_idx, 'h_fml_0_3')
-        # plot_pickle_log_time_series_batch_keys(ax[2], __stored_data, __end_idx, 'h_fml_0_2')
-        # ax[0].set(ylabel="h_fml")
-        # ax[1].set(ylabel="h_fml")
-        # ax[2].set(xlabel="t [s]", ylabel="h_fml")
-        # ax[0].legend(loc='upper right', prop={'size': leg_size})
-        # ax[1].legend(loc='upper right', prop={'size': leg_size})
-        # ax[2].legend(loc='upper right', prop={'size': leg_size})
-        # # plt.show()
-        # pngname = SimSetup.sim_defname + '_h_fml.png'
-        # plt.savefig(pngname, bbox_inches="tight", dpi=300)
-        # print('export figure: ' + pngname, flush=True)
-        ml = min([len(__stored_data['pos_x_0']), len(__stored_data['pos_x_2']), len(__stored_data['pos_x_1']), len(__stored_data['pos_x_0']), len(__stored_data['pos_x_0'])])
 
+        # # # PLOT THE FORMATION DISTANCE
+        # # # This segment is customized
+        # # # TODO: Generic approach
+        # # # ---------------------------------------------------
+        ml = min([len(__stored_data['pos_x_0']), len(__stored_data['pos_x_2']),
+                  len(__stored_data['pos_x_1']), len(__stored_data['pos_x_0']), len(__stored_data['pos_x_0'])])
+        # Timeseries Desired Distance
         __stored_data['Rs'] = [SceneSetup.d_obs for idx in range(len(__stored_data['pos_x_0'])) if __stored_data['pos_x_0'][idx] is not None]
         __stored_data['disD_0_1'] = [SceneSetup.form_A[0, 1] for idx in range(ml) if __stored_data['pos_x_0'][idx] is not None]
         __stored_data['disD_2_3'] = [SceneSetup.form_A[2, 3] for idx in range(ml) if __stored_data['pos_x_2'][idx] is not None]
@@ -1078,69 +1058,61 @@ def exp_pkl_plot():
         __stored_data['disD_0_3'] = [SceneSetup.form_A[0, 3] for idx in range(ml) if __stored_data['pos_x_0'][idx] is not None]
         __stored_data['disD_0_2'] = [SceneSetup.form_A[0, 2] for idx in range(ml) if __stored_data['pos_x_0'][idx] is not None]
 
+        # Data Length
         length = min([len(__stored_data['disD_0_1']), len(__stored_data['disD_2_3']), len(__stored_data['disD_1_2']), len(__stored_data['disD_0_3']), len(__stored_data['disD_0_2'])])
 
-        __stored_data['dist_0_1'] = [((__stored_data['pos_x_0'][idx] - __stored_data['pos_x_1'][idx]) ** 2 +
-                                     (__stored_data['pos_y_0'][idx] - __stored_data['pos_y_1'][idx]) ** 2) ** 0.5
-                                     for idx in range(len(__stored_data['pos_x_0'])) if __stored_data['pos_x_0'][idx] is not None]
-        __stored_data['dist_2_3'] = [((__stored_data['pos_x_2'][idx] - __stored_data['pos_x_3'][idx]) ** 2 +
-                                     (__stored_data['pos_y_2'][idx] - __stored_data['pos_y_3'][idx]) ** 2) ** 0.5
-                                     for idx in range(len(__stored_data['pos_x_2'])) if __stored_data['pos_x_2'][idx] is not None]
-        __stored_data['dist_1_2'] = [((__stored_data['pos_x_1'][idx] - __stored_data['pos_x_2'][idx]) ** 2 +
-                                     (__stored_data['pos_y_1'][idx] - __stored_data['pos_y_2'][idx]) ** 2) ** 0.5
-                                     for idx in range(len(__stored_data['pos_x_1'])) if __stored_data['pos_x_1'][idx] is not None]
-        __stored_data['dist_0_3'] = [((__stored_data['pos_x_0'][idx] - __stored_data['pos_x_3'][idx]) ** 2 +
-                                     (__stored_data['pos_y_0'][idx] - __stored_data['pos_y_3'][idx]) ** 2) ** 0.5
-                                     for idx in range(len(__stored_data['pos_x_0'])) if __stored_data['pos_x_0'][idx] is not None]
-        __stored_data['dist_0_2'] = [((__stored_data['pos_x_0'][idx] - __stored_data['pos_x_2'][idx]) ** 2 +
-                                     (__stored_data['pos_y_0'][idx] - __stored_data['pos_y_2'][idx]) ** 2) ** 0.5
-                                     for idx in range(len(__stored_data['pos_x_0'])) if __stored_data['pos_x_0'][idx] is not None]
+        dist = lambda  data, i, j: [((data[f'pos_x_{i}'][idx] - data[f'pos_x_{j}'][idx]) ** 2 +
+                                      (data[f'pos_y_{j}'][idx] - data[f'pos_y_{i}'][idx]) ** 2) ** 0.5
+                                      for idx in range(len(data[f'pos_x_{i}'])) if data[f'pos_x_{i}'][idx] is not None]
+        disu = lambda data, i, j: [data[f'disD_{i}_{j}'][idx] + data[f'eps_{i}_{j}'][idx] + data[f'eps_{j}_{i}'][idx]
+                                   for idx in range(length)]
+        disl = lambda data, i, j: [max(data[f'disD_{i}_{j}'][idx] - data[f'eps_{i}_{j}'][idx] - data[f'eps_{j}_{i}'][idx], 0)
+                                   for idx in range(length)]
+        disU = lambda data, i, j: [data[f'disD_{i}_{j}'][idx] + SceneSetup.max_form_epsilon[i, j]
+                                   for idx in range(length)]
+        disL = lambda data, i, j: [max(data[f'disD_{i}_{j}'][idx] - SceneSetup.max_form_epsilon[i, j], 0)
+                                   for idx in range(length)]
 
-        __stored_data['disu_0_1'] = [__stored_data['disD_0_1'][idx] + __stored_data['eps_0_1'][idx] + __stored_data['eps_1_0'][idx]
-                                     for idx in range(length)]
-        __stored_data['disl_0_1'] = [max(__stored_data['disD_0_1'][idx] - __stored_data['eps_0_1'][idx] - __stored_data['eps_1_0'][idx], 0)
-                                     for idx in range(length)]
-        __stored_data['disU_0_1'] = [__stored_data['disD_0_1'][idx] + SceneSetup.max_form_epsilon[0, 1]
-                                     for idx in range(length)]
-        __stored_data['disL_0_1'] = [max(__stored_data['disD_0_1'][idx] - SceneSetup.max_form_epsilon[0, 1], 0)
-                                     for idx in range(length)]
-        __stored_data['disu_2_3'] = [__stored_data['disD_2_3'][idx] + __stored_data['eps_2_3'][idx] + __stored_data['eps_3_2'][idx]
-                                     for idx in range(length)]
-        __stored_data['disl_2_3'] = [max(__stored_data['disD_2_3'][idx] - __stored_data['eps_2_3'][idx] - __stored_data['eps_3_2'][idx], 0)
-                                     for idx in range(length)]
-        __stored_data['disU_2_3'] = [__stored_data['disD_2_3'][idx] + SceneSetup.max_form_epsilon[2, 3]
-                                     for idx in range(length)]
-        __stored_data['disL_2_3'] = [max(__stored_data['disD_2_3'][idx] - SceneSetup.max_form_epsilon[2, 3], 0)
-                                     for idx in range(length)]
-        __stored_data['disu_1_2'] = [__stored_data['disD_1_2'][idx] + __stored_data['eps_1_2'][idx] + __stored_data['eps_2_1'][idx]
-                                     for idx in range(len(__stored_data['disD_1_2']))]
-        __stored_data['disl_1_2'] = [max(__stored_data['disD_1_2'][idx] - __stored_data['eps_1_2'][idx] - __stored_data['eps_2_1'][idx], 0)
-                                     for idx in range(length)]
-        __stored_data['disU_1_2'] = [__stored_data['disD_1_2'][idx] + SceneSetup.max_form_epsilon[1, 2]
-                                     for idx in range(length)]
-        __stored_data['disL_1_2'] = [max(__stored_data['disD_1_2'][idx] - SceneSetup.max_form_epsilon[1, 2], 0)
-                                     for idx in range(length)]
-        __stored_data['disu_0_3'] = [__stored_data['disD_0_3'][idx] + __stored_data['eps_0_3'][idx] + __stored_data['eps_3_0'][idx]
-                                     for idx in range(length)]
-        __stored_data['disl_0_3'] = [max(__stored_data['disD_0_3'][idx] - __stored_data['eps_0_3'][idx] - __stored_data['eps_3_0'][idx], 0)
-                                     for idx in range(length)]
-        __stored_data['disU_0_3'] = [__stored_data['disD_0_3'][idx] + SceneSetup.max_form_epsilon[0, 3]
-                                     for idx in range(length)]
-        __stored_data['disL_0_3'] = [max(__stored_data['disD_0_3'][idx] - SceneSetup.max_form_epsilon[0, 3], 0)
-                                     for idx in range(length)]
-        __stored_data['disu_0_2'] = [__stored_data['disD_0_2'][idx] + __stored_data['eps_0_2'][idx] + __stored_data['eps_2_0'][idx]
-                                     for idx in range(length)]
-        __stored_data['disl_0_2'] = [max(__stored_data['disD_0_2'][idx] - __stored_data['eps_0_2'][idx] - __stored_data['eps_2_0'][idx], 0)
-                                     for idx in range(length)]
-        __stored_data['disU_0_2'] = [__stored_data['disD_0_2'][idx] + SceneSetup.max_form_epsilon[0, 2]
-                                     for idx in range(length)]
-        __stored_data['disL_0_2'] = [max(__stored_data['disD_0_2'][idx] - SceneSetup.max_form_epsilon[0, 2], 0)
-                                     for idx in range(length)]
+        __stored_data['dist_0_1'] = dist(__stored_data, 0, 1)
+        __stored_data['dist_2_3'] = dist(__stored_data, 2, 3)
+        __stored_data['dist_1_2'] = dist(__stored_data, 1, 2)
+        __stored_data['dist_0_3'] = dist(__stored_data, 0, 3)
+        __stored_data['dist_0_2'] = dist(__stored_data, 0, 2)
 
-        print(len(__stored_data['time']), len(__stored_data['disl_0_1']), len(__stored_data['eps_0_1']))
+        __stored_data['disu_0_1'] = disu(__stored_data, 0, 1)
+        __stored_data['disl_0_1'] = disl(__stored_data, 0, 1)
+        __stored_data['disU_0_1'] = disU(__stored_data, 0, 1)
+        __stored_data['disL_0_1'] = disL(__stored_data, 0, 1)
+
+        __stored_data['disu_2_3'] = disu(__stored_data, 2, 3)
+        __stored_data['disl_2_3'] = disl(__stored_data, 2, 3)
+        __stored_data['disU_2_3'] = disU(__stored_data, 2, 3)
+        __stored_data['disL_2_3'] = disL(__stored_data, 2, 3)
+
+        __stored_data['disu_1_2'] = disu(__stored_data, 1, 2)
+        __stored_data['disl_1_2'] = disl(__stored_data, 1, 2)
+        __stored_data['disU_1_2'] = disU(__stored_data, 1, 2)
+        __stored_data['disL_1_2'] = disL(__stored_data, 1, 2)
+
+        __stored_data['disu_0_3'] = disu(__stored_data, 0, 3)
+        __stored_data['disl_0_3'] = disl(__stored_data, 0, 3)
+        __stored_data['disU_0_3'] = disU(__stored_data, 0, 3)
+        __stored_data['disL_0_3'] = disL(__stored_data, 0, 3)
+
+        __stored_data['disu_0_2'] = disu(__stored_data, 0, 2)
+        __stored_data['disl_0_2'] = disl(__stored_data, 0, 2)
+        __stored_data['disU_0_2'] = disU(__stored_data, 0, 2)
+        __stored_data['disL_0_2'] = disL(__stored_data, 0, 2)
+
         __end_idx = len(__stored_data['disD_0_1'])
+
+        # PLOTTING
+        # Customized: 05 data to plot
+        # TODO: generic approach
         fig, ax = plt.subplots(nrows=5, ncols=1, sharex=True, figsize=(8, 6), gridspec_kw={'height_ratios': [1, 1, 2, 2, 4]})
         plt.rcParams.update({'font.size': FS})
+
+        # Subplot 1
         plot_pickle_log_time_series_batch_keys(ax[0], __stored_data, __end_idx, 'dist_0_1')
         ax[0].fill_between(__stored_data['time'][:__end_idx], __stored_data['disl_0_1'], __stored_data['disu_0_1'],
                            alpha=0.2, color='k', linewidth=0)
@@ -1149,6 +1121,7 @@ def exp_pkl_plot():
         ax[0].plot(__stored_data['time'][:__end_idx], __stored_data['disL_0_1'], color='r', linestyle='dashed', linewidth=1)
         ax[0].set(ylim=(__stored_data['disL_0_1'][0] - 0.1, __stored_data['disU_0_1'][0] + 0.1))
 
+        # Subplot 2
         plot_pickle_log_time_series_batch_keys(ax[1], __stored_data, __end_idx, 'dist_2_3')
         ax[1].fill_between(__stored_data['time'][:__end_idx], __stored_data['disl_2_3'], __stored_data['disu_2_3'],
                            alpha=0.2, color='k', linewidth=0)
@@ -1160,6 +1133,7 @@ def exp_pkl_plot():
                    linewidth=1)
         ax[1].set(ylim=(__stored_data['disL_2_3'][0] - 0.1, __stored_data['disU_2_3'][0] + 0.1))
 
+        # Subplot 3
         plot_pickle_log_time_series_batch_keys(ax[2], __stored_data, __end_idx, 'dist_1_2')
         ax[2].fill_between(__stored_data['time'][:__end_idx], __stored_data['disl_1_2'], __stored_data['disu_1_2'],
                            alpha=0.2, color='k', linewidth=0)
@@ -1171,6 +1145,7 @@ def exp_pkl_plot():
                    linewidth=1)
         ax[2].set(ylim=(__stored_data['disL_1_2'][0] - 0.1, __stored_data['disU_1_2'][0] + 0.1))
 
+        # Subplot 4
         plot_pickle_log_time_series_batch_keys(ax[3], __stored_data, __end_idx, 'dist_0_3')
         ax[3].fill_between(__stored_data['time'][:__end_idx], __stored_data['disl_0_3'], __stored_data['disu_0_3'],
                            alpha=0.2, color='k', linewidth=0)
@@ -1182,6 +1157,7 @@ def exp_pkl_plot():
                    linewidth=1)
         ax[3].set(ylim=(__stored_data['disL_0_3'][0] - 0.1, __stored_data['disU_0_3'][0] + 0.1))
 
+        # Subplot 5
         plot_pickle_log_time_series_batch_keys(ax[4], __stored_data, __end_idx, 'dist_0_2')
         ax[4].fill_between(__stored_data['time'][:__end_idx], __stored_data['disl_0_2'], __stored_data['disu_0_2'],
                            alpha=0.2, color='k', linewidth=0)
@@ -1193,24 +1169,18 @@ def exp_pkl_plot():
                    linewidth=1)
         ax[4].set(ylim=(__stored_data['disL_0_2'][0] - 0.1, __stored_data['disU_0_2'][0] + 0.1))
 
+        # Axes title
         ax[0].set_ylabel("$\Vert p_1-p_2 \Vert$", fontsize=10)
         ax[1].set_ylabel("$\Vert p_3-p_4 \Vert$", fontsize=10)
         ax[2].set_ylabel("$\Vert p_2-p_3 \Vert$", fontsize=10)
         ax[3].set_ylabel("$\Vert p_1-p_4 \Vert$", fontsize=10)
         ax[4].set_ylabel("$\Vert p_1-p_3 \Vert$", fontsize=10)
         ax[4].set_xlabel("t [s]")
-        # ax[0].legend(loc='upper right', prop={'size': leg_size})
-        # ax[1].legend(loc='upper right', prop={'size': leg_size})
-        # ax[2].legend(loc='upper right', prop={'size': leg_size})
-        # ax[3].legend(loc='upper right', prop={'size': leg_size})
-        # ax[4].legend(loc='upper right', prop={'size': leg_size})
-        # plt.show()
+
+        # Save
         pngname = SimSetup.sim_defname + '_form_dist.png'
-        # plt.show()
         plt.savefig(pngname, bbox_inches='tight',dpi=300)
         print('export figure: ' + pngname, flush=True)
-
-
 
     # # PLOT THE H STATICOBS
     # # ---------------------------------------------------
@@ -1227,21 +1197,6 @@ def exp_pkl_plot():
         pngname = SimSetup.sim_defname + '_h_staticobs.png'
         plt.savefig(pngname, bbox_inches="tight", dpi=300)
         print('export figure: ' + pngname, flush=True)
-
-    # PLOT THE DISTANCE
-    # ---------------------------------------------------
-    # fig = plt.figure(figsize=figure_short)
-    # plt.rcParams.update({'font.size': FS})
-    # # plt.rcParams['text.usetex'] = True
-    # ax = plt.gca()
-    # # plot
-    # plot_pickle_robot_distance(ax, __stored_data, __end_idx, 'pos_x_', 'pos_y_')
-    # ax.set(xlabel="t [s]", ylabel='distance [m]')
-    # ax.legend(loc='best', prop={'size': leg_size})
-    # # plt.show()
-    # pngname = SimSetup.sim_defname + '_dist.png'
-    # plt.savefig(pngname, bbox_inches="tight", dpi=300)
-    # print('export figure: ' + pngname, flush=True)
 
     plt.close('all')
 
