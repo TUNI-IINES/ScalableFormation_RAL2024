@@ -23,7 +23,7 @@ class SceneSetup:
                                    [0.75, 1, 0],
                                    [1.25, 1, 0]])
     # Here we assume any final pose is OK
-    robot_color: [] = []
+    robot_color: [] = ['#d62728', '#1f77b4', '#2ca02c', '#ff7f0e']
 
     # OBSTACLE PARAMETER
     static_circle_obstacles: [] = [{"pos": np.array([-0.4, 0.6, 0]), "r": 0.3},
@@ -170,7 +170,7 @@ class Controller:
                     h_fml, h_fmu, h_eps_floor, h_eps_ceil = self.cbf[i].add_maintain_distance_with_distinct_epsilon(
                         current_q, j_q, SceneSetup.form_A[i, j], SceneSetup.max_form_epsilon[i][j], i_eps[j], j_eps[i],
                         j,
-                        gamma=10, power=3)
+                        gamma=200, power=3)
 
                     # store h value
                     computed_control.save_monitored_info(f"h_eps_ceil_{i}_{j}", h_eps_ceil)
@@ -185,7 +185,7 @@ class Controller:
                 # print(range_data)
                 range_points = feedback.get_robot_i_detected_pos(i)  # [(obs_x, obs_y, 0)]
                 range_data = np.array([np.linalg.norm(current_q - point, 2) for point in range_points])
-                detected_obs_points = range_points[(range_data < 0.99 * SceneSetup.default_range) & (range_data > 0.13)]  # filtered
+                detected_obs_points = range_points[(range_data < 0.99 * SceneSetup.default_range) & (range_data > 0.05)]  # filtered
 
                 # if i == 0: print(i, range_points[0])
 
@@ -197,6 +197,7 @@ class Controller:
 
                 # store h value
                 computed_control.save_monitored_info(f"h_staticobs_{i}", min_h)
+                computed_control.save_monitored_info(f"lidar_{i}", np.min(range_data))
 
             if SceneSetup.speed_limit > 0.:
                 # set speed limit

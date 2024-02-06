@@ -15,8 +15,8 @@ from simulator.detect_obstacle import DetectObstacle
 # GENERAL PARAM AND COMPUTATION FOR THIS SPECIFIC SCENARIO (Both SIM and EXP)
 # -----------------------------------------------------------------------
 
-def import_scenario():
-    with open('scenarios_unicycle/scenarios/formation4_exp.yml', 'r') as file:
+def import_scenario(filename="formation4_exp", directory="scenarios_unicycle/scenarios/"):
+    with open(f'{directory}{filename}.yml', 'r') as file:
         import yaml
         scenario, control, setup = yaml.safe_load(file).values()
 
@@ -81,6 +81,13 @@ def import_scenario():
         for idx in range(SceneSetup.robot_num)
     ])
 
+    SceneSetup.goal_poses = [np.array([
+        SceneSetup.form_waypoints[SceneSetup.form_id[idx]][i]
+        + rot(SceneSetup.form_wp_orient[SceneSetup.form_id[idx]][i]) @ SceneSetup.struct[idx]
+        for i in range(len(SceneSetup.form_waypoints[SceneSetup.form_id[idx]]))
+    ]) for idx in range(SceneSetup.robot_num)]
+    print(SceneSetup.goal_poses)
+
     SceneSetup.major_l = scenario['formations']['major_l']  # diameter of ellipse in major-axis
     SceneSetup.minor_l = scenario['formations']['minor_l']  # ... in minor-axis
     NebolabSetup.FIELD_X = SceneSetup.FIELD_X
@@ -132,7 +139,7 @@ class SimSetup:
     sim_trajTail = None  # Show all trajectory
     sim_fdata_vis = sim_defname + '_vis.pkl'
 
-    timeseries_window = 1  # in seconds, for the time series data
+    timeseries_window = 10  # in seconds, for the time series data
     eps_visualization = True
     DETECT_OTHER_ROBOTS = True
     robot_angle_bound = np.append(np.linspace(0., 2 * np.pi, num=8, endpoint=False), 0) + np.pi / 8
@@ -276,7 +283,7 @@ class SimulationCanvas:
             for j in range(SceneSetup.robot_num):
                 if (i < j) and (SceneSetup.form_A[i, j] > 0):
                     self.__drawn_comm_lines[str(i) + '_' + str(j)], = ax_2D.plot([-i, -i], [j, j],
-                                                                                 color='k', linewidth=0.5 / SceneSetup.max_form_epsilon[i][j])
+                                                                                 color='k', linewidth=0.15 / SceneSetup.max_form_epsilon[i][j])
 
         # Display sensing data
         self.__pl_sens = dict()
@@ -427,7 +434,8 @@ class SimulationCanvas:
 class ExpSetup():
     exp_defname = 'experiment_result/ROSTB_FormationAvoidance'
     exp_fdata_vis = exp_defname + '_data.pkl'
-    ROS_RATE = 50
+    ROS_RATE = 20
+    LiDAR_RATE = 5
 
 
 class ExperimentEnv():
@@ -440,7 +448,8 @@ class ExperimentEnv():
         self.scan_LIDAR = SceneSetup.default_range_data.copy()
         # Initiate data_logger
         self.__cur_time = 0.
-        self.log = dataLogger( ExpSetup.log_duration * ExpSetup.ROS_RATE )
+        # self.log = dataLogger( ExpSetup.log_duration * ExpSetup.ROS_RATE )
+        self.log = dataLogger(30000)
 
     # NOTES: it seems cleaner to do it this way
     # rather than dynamically creating the callbacks
