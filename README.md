@@ -9,7 +9,7 @@ The repository was inherited from Widhi Atman's repository.
 There are three branches:
 - `main`: the stable program that has been tested.
 - `algorithm_testing`: the unstable one for implementing new theories.
-- `experiment`: the ROS environment needs to pull the `main` or `algorithm_testing` branches to the `\src` folder
+- `experiment`: the ROS environment needs to pull the `main` or `algorithm_testing` branches to the `\src` folder.
 
 ## Instructions
 To run Python simulations, simply run `python sim2D_main.py` on the root directory.
@@ -26,5 +26,5 @@ To plot `.pkl` file, put the `<name>.pkl` in `scenarios_unicycle\saved_pkl\`.
 Uncomment `exp_pkl_plot()` in `pickleplot.py`, then at root directory, run `python pickleplot.py <name>`.
 
 To process the video, put both `<name>.mp4` and `<name>.pkl` in `scenarios_unicycle\saved_pkl\`.
-Uncomment `exp_video_pkl_plot(snap=True)` and `exp_video_pkl_plot(beautify=True)` in `pickleplot.py`, 
-then at root directory, run `python pickleplot.py <name>`.
+Uncomment the `exp_video_pkl_plot(snap=True)` and run `python pickleplot.py <name>`.
+Then uncomment the `exp_video_pkl_plot(beautify=True)` in `pickleplot.py`, run `python pickleplot.py <name>`.
