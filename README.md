@@ -3,7 +3,7 @@ This is the repository for the paper submission toward CCTA2024.
 
 The main authors are Hoang Pham, Nadun Ranasinghe, and Dong Le.
 
-The repository was inherited from Widhi Atman's repository.
+The repository was inherited from and supported by Widhi Atman's repository.
 
 ## Brief Description
 There are three branches:
