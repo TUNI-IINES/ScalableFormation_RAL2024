@@ -1,5 +1,5 @@
 # CCTA2024_ScalableFormation
-This is the repository for the application used in the course KONE.533 Robotics Project Works and for the paper submission toward CCTA2024.
+This is the repository for the paper submission toward CCTA2024.
 
 The main authors are Hoang Pham, Nadun Ranasinghe, and Dong Le.
 
