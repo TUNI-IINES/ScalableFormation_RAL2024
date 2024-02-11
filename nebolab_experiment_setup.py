@@ -28,7 +28,7 @@ class NebolabSetup:
     # Function pixel to meter and vice-versa
     @staticmethod
     def pos_m2pxl(x, y):
-        return NebolabSetup.PXL_ORIGIN[0] + int( x * NebolabSetup.SCALE_M2PXL), NebolabSetup.PXL_ORIGIN[1] - int( y * NebolabSetup.SCALE_M2PXL)
+        return NebolabSetup.PXL_ORIGIN[0] + int( x * NebolabSetup.SCALE_M2PXL * 1.05), NebolabSetup.PXL_ORIGIN[1] - int( y * NebolabSetup.SCALE_M2PXL * 1.02)
     @staticmethod
     def pos_pxl2m(px, py):
         return float((px - NebolabSetup.PXL_ORIGIN[0] ) /NebolabSetup.SCALE_M2PXL), float \

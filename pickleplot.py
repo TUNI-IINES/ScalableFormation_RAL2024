@@ -543,156 +543,6 @@ def scenario_pkl_plot():
     plt.close('all')
 
 
-def prep(input_frame, lower, upper):
-    # All shapes
-    # Lower = (0, 86, 6)
-    # Upper = (150, 255, 255)
-
-    # Original shape
-    # Lower = (29, 86, 6)
-    # Upper = (64, 255, 255)
-
-    # (r, g, b) = (27, 69, 103)
-    # 0 255 102
-    # (r, g, b) = (255, 0, 0)
-    # 0 255 255
-
-    # # normalize
-    # (r, g, b) = (r / 255, g / 255, b / 255)
-    # # convert to hsv
-    # (h, s, v) = colorsys.rgb_to_hsv(r, g, b)
-    # # expand HSV range
-    # (h, s, v) = (int(h * 179), int(s * 255), int(v * 255))
-    # print('HSV : ', h, s, v)
-
-    # output_frame = imutils.resize(input_frame, width=800)
-    # output_frame = input_frame.copy()
-    ## Todo 3.1.3 gaussian blur
-    # blurred = cv2.blur(input_frame, (12, 12))
-    # hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
-    hsv = cv2.cvtColor(input_frame, cv2.COLOR_BGR2HSV)
-    output_mask = cv2.inRange(hsv, np.array(lower), np.array(upper))
-    h, w = output_mask.shape
-    output_mask[int(0.2 * h):int(0.285 * h), int(0.39 * w):int(0.59 * w)] = 0
-    output_mask[int(0.62 * h):int(0.7 * h), int(0.39 * w):int(0.59 * w)] = 0
-    return output_mask
-
-
-def find_cnts(input_mask):
-    # input: src_img, contour_mode, approx_method
-    # output: contours and hierarchy
-    # SIMPLE: two endpoints of the line
-    # NONE: all boundary points
-    threshold = 100
-    # canny_output = cv2.Canny(input_mask, threshold, threshold * 2)
-    # cnts = cv2.findContours(canny_output, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    cnts = cv2.findContours(input_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    cnts = imutils.grab_contours(cnts)
-    return cnts
-
-
-def contour(input_frame, input_mask, color):
-    cnts = find_cnts(input_mask)
-
-    # c = cnts[5]
-    # c = max(cnts, key=cv2.contourArea)
-    # frame1 = input_frame.copy()
-    centers = []
-
-    cnts = list(cnts)
-
-    overlap = True
-    while overlap:
-        overlap = False
-        __contours = []
-        # print(type(_contours[0][0]))
-        for c in cnts:
-            __contours.append([np.average(c[idx:min(idx + 5, len(c))], axis=0)
-                               for idx in range(0, len(c), 5)])
-        # print(len(__contours), len(_contours))
-        for idx, c1 in enumerate(__contours):
-            if not overlap:
-                for ix, c2 in enumerate(__contours):
-                    if ix <= idx: continue
-                    if not overlap:
-                        for i1, pt1 in enumerate(c1):
-                            if not overlap:
-                                for i2, pt2 in enumerate(c2):
-                                    if not overlap:
-                                        if (pt1[0][0] - pt2[0][0]) ** 2 + (pt1[0][1] - pt2[0][1]) ** 2 < 10:
-                                            c1_ = [p[0] for p in cnts[ix]]
-                                            c2_ = [p[0] for p in cnts[idx]]
-                                            ctr = np.array(c1_[i1:] + c2_ + c1_[:i1]).reshape(
-                                                (-1, 1, 2)).astype(np.int32)
-                                            del cnts[ix]
-                                            del cnts[idx]
-                                            cnts.append(ctr)
-                                            overlap = True
-                                            break
-
-
-        # bboxes = []
-        # for c in cnts:
-        #     contours_poly = cv2.approxPolyDP(c, 3, True)
-        #     bboxes.append(cv2.boundingRect(contours_poly))
-        #
-        # for idx, box in enumerate(bboxes):
-        #     if not overlap:
-        #         for c in cnts[idx + 1:]:
-        #             if not overlap:
-        #                 for pt in c:
-        #                     if box[0] < pt[0][0] < box[0] + box[2] and box[1] < pt[0][1] < box[1] + box[3]:
-        #                         ctr = np.array([p[0] for p in c] + [p[0] for p in cnts[idx]]).reshape((-1, 1, 2)).astype(np.int32)
-        #                         del cnts[idx:idx+2]
-        #                         cnts.append(ctr)
-        #                         overlap = True
-        #                         break
-
-    cnts = tuple(cnts)
-
-    for c in cnts:
-        if cv2.contourArea(c) < 50 or cv2.contourArea(c) > 10000: continue
-
-        ((x, y), radius) = cv2.minEnclosingCircle(c)  ## A different contour?
-        # print(cnts)
-
-        # Find center of contour using moments in opencvq
-        M = cv2.moments(c)
-        try:
-            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-            centers.append(center)
-        except ZeroDivisionError as e:
-            print("ZeroDivisionError")
-            continue
-
-        # # circle
-        # cv2.circle(input_frame, (int(x), int(y)), int(radius), (0, 0, 255), 2)
-        # cv2.circle(input_frame, center, 5, (0, 0, 255), -1)
-        #
-        # # draw rectangle with green line
-        # contours_poly = cv2.approxPolyDP(c, 3, True)
-        # boundRect = cv2.boundingRect(contours_poly)
-        # cv2.rectangle(input_frame, (int(boundRect[0]), int(boundRect[1])),
-        #               (int(boundRect[0] + boundRect[2]), int(boundRect[1] + boundRect[3])), (0, 255, 0), 1)
-        #
-        # # draw rotate rectangle with blue line
-        # rect = cv2.minAreaRect(c)
-        # box = cv2.boxPoints(rect)
-        # box = np.int0(box)
-        # cv2.drawContours(input_frame, [box], 0, (255, 0, 0), 1)
-        #
-        # # draw Hull with pink line
-        hull = cv2.convexHull(c)
-        cv2.drawContours(input_frame, [hull], 0, color, 1)
-
-    if len(centers) > 0:
-        avg_center = (int(sum([c[0] for c in centers]) / len(centers)),
-                      int(sum([c[1] for c in centers]) / len(centers)))
-        return avg_center
-    else:
-        return None
-
-
 def exp_video_pkl_plot(snap=False, beautify=False):
     """
 
@@ -786,10 +636,6 @@ def exp_video_pkl_plot(snap=False, beautify=False):
                              'Checkpoint green robot',
                              'Checkpoint orange robot']
                 for i in range(SceneSetup.robot_num):
-                    px_key, py_key = 'pos_x_' + str(i), 'pos_y_' + str(i)
-                    # pxl_goal_x, pxl_goal_y = pos_pxl[px_key][goal_snap[idx] * data_freq], \
-                    #     pos_pxl[py_key][goal_snap[idx] * data_freq]
-                    # print(*SceneSetup.goal_poses[i][goal_snap])
                     pxl_goal_x, pxl_goal_y = NebolabSetup.pos_m2pxl(*SceneSetup.goal_poses[i][goal_snap[idx]][:2])
                     ax.scatter(pxl_goal_x, pxl_goal_y, 50, marker='o', color=SceneSetup.robot_color[i],
                                edgecolors='black', label=goal_name[i])
@@ -799,10 +645,8 @@ def exp_video_pkl_plot(snap=False, beautify=False):
 
                 name = outname + str(snap_point) + '.pdf'
                 pngname = outname + str(snap_point) + '.png'
-                # plt.savefig(name, bbox_inches="tight", pad_inches=0, dpi=300)
                 plt.savefig(pngname, bbox_inches="tight", pad_inches=0, dpi=300)
                 print(pngname)
-
 
         if beautify:
             red = [(3, 30, 170), (15, 230, 255), (0, 0, 255)]
@@ -826,22 +670,9 @@ def exp_video_pkl_plot(snap=False, beautify=False):
                 if ret:
                     current_step += 1
                     print(f"Current step: {current_step:>5}", end="\r")
-                    # cv2.imshow('frame', frame)
                     for i in range(SceneSetup.robot_num):
                         centers[i] = NebolabSetup.pos_m2pxl(__stored_data[f'pos_x_{i}'][int(current_step * ratio)],
                                                             __stored_data[f'pos_y_{i}'][int(current_step * ratio)])
-                        # mask = prep(frame, colors[i][0], colors[i][1])
-                        # center = contour(frame, mask, colors[i][2])
-                        # if centers[i] == (0, 0):
-                        #     if center is None: pass
-                        #     else: centers[i] = center
-                        # else:
-                        #     if center is None: pass
-                        #     else:
-                        #         centers[i] = (int(centers[i][0] * 0.9 + center[0] * 0.1),
-                        #                       int(centers[i][1] * 0.9 + center[1] * 0.1))
-                        # cv2.circle(frame, centers[i], 10, colors[i][2], -1)
-                        # out.write(frame)
                     for i in range(SceneSetup.robot_num):
                         for j in range(SceneSetup.robot_num):
                             if (i < j) and (SceneSetup.form_A[i, j] > 0):
@@ -1205,6 +1036,12 @@ if __name__ == '__main__':
 
     preamble_setting(sys.argv[1])
     # scenario_pkl_plot()
+
+    ## Take snaps of beautified one
     # exp_video_pkl_plot(snap=True)
+
+    ## Make the links and centers
     # exp_video_pkl_plot(beautify=True)
+
+    ## Plot paras
     exp_pkl_plot()
