@@ -5,7 +5,9 @@ import matplotlib.animation as animation
 # UNICYCLE SCENARIOS
 # -------------------------------------------------------------------------------------------------------------------------------
 from scenarios_unicycle.CCTA2024_Controller import FeedbackInformation, Controller, ControlOutput
+# from scenarios_unicycle.CCTA2024_Controller_2 import FeedbackInformation, Controller, ControlOutput
 from scenarios_unicycle.CCTA2024_FormationObstacleLidar_scenario import SimSetup, SimulationCanvas
+# from scenarios_unicycle.CCTA2024_FormationObstacleLidar_scenario_2 import SimSetup, SimulationCanvas
 
 
 class Simulate:
@@ -41,7 +43,7 @@ def main():
     if SimSetup.save_animate:  # default not showing animation
         print('saving animation ...')
         # ani.save(SimSetup.sim_fname_output, writer='pillow', fps=round(1 / SimSetup.Ts))
-        ani.save(SimSetup.sim_fname_output, writer='pillow', fps=8)
+        ani.save(SimSetup.sim_fname_output, writer='pillow', fps=5)
     else:
         plt.show()
 

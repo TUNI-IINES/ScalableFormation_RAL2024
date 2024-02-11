@@ -1,5 +1,6 @@
 # CCTA2024_ScalableFormation
-This is the repository for the paper submission toward CCTA2024.
+
+This is the repository for the application used for the paper submission toward CCTA2024.
 
 The main authors are Hoang Pham, Nadun Ranasinghe, and Dong Le.
 
@@ -26,7 +27,6 @@ Ensure that the name of the `.yml` file should be the same as the one mentioned 
 To plot `.pkl` file, put the `<name>.pkl` in `scenarios_unicycle\saved_pkl\`.\
 Uncomment `exp_pkl_plot()` in `pickleplot.py`, then at root directory, run `python pickleplot.py <name>`.
 
-To process the video, put both `<name>.mp4` and `<name>.pkl` in `scenarios_unicycle\saved_pkl\`.\
-Uncomment the `exp_video_pkl_plot(snap=True)` and run `python pickleplot.py <name>`.\
-Then uncomment the `exp_video_pkl_plot(beautify=True)` in `pickleplot.py`, run `python pickleplot.py <name>`.
-
+To process the video, put both `<name>.mp4` and `<name>.pkl` in `scenarios_unicycle\saved_pkl\`.
+First, uncomment `exp_video_pkl_plot(beautify=True)` in `pickleplot.py`, then at root directory, run `python pickleplot.py <name>`.
+Second, uncomment `exp_video_pkl_plot(snap=True)` in `pickleplot.py`, then at root directory, run `python pickleplot.py <name>` again.
