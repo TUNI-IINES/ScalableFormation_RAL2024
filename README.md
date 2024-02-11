@@ -5,11 +5,13 @@ The main authors are Hoang Pham, Nadun Ranasinghe, and Dong Le.
 
 The repository was inherited from and supported by Widhi Atman's repository.
 
+
 ## Brief Description
 There are three branches:
 - `main`: the stable program that has been tested.
 - `algorithm_testing`: the unstable one for implementing new theories.
 - `experiment`: the ROS environment needs to pull the `main` or `algorithm_testing` branches to the `\src` folder.
+
 
 ## Instructions
 To run Python simulations, simply run `python sim2D_main.py` on the root directory.
@@ -27,3 +29,4 @@ Uncomment `exp_pkl_plot()` in `pickleplot.py`, then at root directory, run `pyth
 To process the video, put both `<name>.mp4` and `<name>.pkl` in `scenarios_unicycle\saved_pkl\`.\
 Uncomment the `exp_video_pkl_plot(snap=True)` and run `python pickleplot.py <name>`.\
 Then uncomment the `exp_video_pkl_plot(beautify=True)` in `pickleplot.py`, run `python pickleplot.py <name>`.
+
