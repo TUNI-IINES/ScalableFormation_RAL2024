@@ -15,8 +15,8 @@ from simulator.detect_obstacle import DetectObstacle
 # GENERAL PARAM AND COMPUTATION FOR THIS SPECIFIC SCENARIO (Both SIM and EXP)
 # -----------------------------------------------------------------------
 
-def import_scenario():
-    with open('scenarios_unicycle/scenarios/formation4_mixed.yml', 'r') as file:
+def import_scenario(filename="formation4_exp", directory="scenarios_unicycle/scenarios/"):
+    with open(f'{directory}{filename}.yml', 'r') as file:
         import yaml
         scenario, control, setup = yaml.safe_load(file).values()
 
@@ -81,6 +81,13 @@ def import_scenario():
         for idx in range(SceneSetup.robot_num)
     ])
 
+    SceneSetup.goal_poses = [np.array([
+        SceneSetup.form_waypoints[SceneSetup.form_id[idx]][i]
+        + rot(SceneSetup.form_wp_orient[SceneSetup.form_id[idx]][i]) @ SceneSetup.struct[idx]
+        for i in range(len(SceneSetup.form_waypoints[SceneSetup.form_id[idx]]))
+    ]) for idx in range(SceneSetup.robot_num)]
+    print(SceneSetup.goal_poses)
+
     SceneSetup.major_l = scenario['formations']['major_l']  # diameter of ellipse in major-axis
     SceneSetup.minor_l = scenario['formations']['minor_l']  # ... in minor-axis
     NebolabSetup.FIELD_X = SceneSetup.FIELD_X
@@ -125,14 +132,14 @@ class SimSetup:
 
     now = datetime.now()
     dt_string = now.strftime("%Y%m%d_%H%M%S")
-    desc = "testVis"
-    # desc = "mixed"
+    # desc = "testVis"
+    desc = "exp"
     sim_defname = f'animation_result/{dt_string}_{desc}/sim2D_FormationObstacleLidar'
     sim_fname_output = r'' + sim_defname + '.gif'
     sim_trajTail = None  # Show all trajectory
     sim_fdata_vis = sim_defname + '_vis.pkl'
 
-    timeseries_window = 1  # in seconds, for the time series data
+    timeseries_window = 10  # in seconds, for the time series data
     eps_visualization = True
     DETECT_OTHER_ROBOTS = True
     robot_angle_bound = np.append(np.linspace(0., 2 * np.pi, num=8, endpoint=False), 0) + np.pi / 8
@@ -190,22 +197,27 @@ class SimulationCanvas:
                 all_robots_pos[i, :2] = state['q'][:2]
                 all_robots_theta[i] = state['theta']
 
-                if SimSetup.DETECT_OTHER_ROBOTS:
-                    # Update robot shape to be used for range detection
-                    v_angles = SimSetup.robot_angle_bound + all_robots_theta[i]
-                    robot_shape = np.array([np.cos(v_angles), np.sin(v_angles), v_angles * 0]) * SimSetup.robot_rad
-                    robot_bounds = np.transpose(robot_shape + all_robots_pos[i, :3].reshape(3, 1))
-                    self.__rangesens.register_obstacle_bounded(i, robot_bounds)
+            if self.__cur_time % SimSetup.LiDAR_rate < SimSetup.Ts:
+                # print(self.__cur_time)
+                for i in range(SceneSetup.robot_num):
+                    if SimSetup.DETECT_OTHER_ROBOTS:
+                        # Update robot shape to be used for range detection
+                        v_angles = SimSetup.robot_angle_bound + all_robots_theta[i]
+                        robot_shape = np.array([np.cos(v_angles), np.sin(v_angles), v_angles * 0]) * SimSetup.robot_rad
+                        robot_bounds = np.transpose(robot_shape + all_robots_pos[i, :3].reshape(3, 1))
+                        self.__rangesens.register_obstacle_bounded(i, robot_bounds)
 
-            for i in range(SceneSetup.robot_num):
-                # update sensor data by excluding its own
-                all_range_data[i, :] = self.__rangesens.get_sensing_data(
-                    all_robots_pos[i, 0], all_robots_pos[i, 1], all_robots_theta[i],
-                    exclude=[i] if SimSetup.DETECT_OTHER_ROBOTS else [])
+                for i in range(SceneSetup.robot_num):
+                    # update sensor data by excluding its own
+                    all_range_data[i, :] = self.__rangesens.get_sensing_data(
+                        all_robots_pos[i, 0], all_robots_pos[i, 1], all_robots_theta[i],
+                        exclude=[i] if SimSetup.DETECT_OTHER_ROBOTS else [])
+
+                feedback.set_sensor_reading(all_range_data)
 
             # UPDATE FEEDBACK for the controller
             feedback.set_feedback(all_robots_pos, all_robots_theta)
-            feedback.set_sensor_reading(all_range_data)
+
 
             #TODO: put this in expenv
             if SimSetup.eps_visualization:  # TODO WIDHI: check notes in SimSetup
@@ -271,7 +283,7 @@ class SimulationCanvas:
             for j in range(SceneSetup.robot_num):
                 if (i < j) and (SceneSetup.form_A[i, j] > 0):
                     self.__drawn_comm_lines[str(i) + '_' + str(j)], = ax_2D.plot([-i, -i], [j, j],
-                                                                                 color='k', linewidth=0.5 / SceneSetup.max_form_epsilon[i][j])
+                                                                                 color='k', linewidth=0.15 / SceneSetup.max_form_epsilon[i][j])
 
         # Display sensing data
         self.__pl_sens = dict()
@@ -304,17 +316,17 @@ class SimulationCanvas:
         array_max_eps = np.delete(array_max_eps, 0)
         self.__prev_fill = list()
 
-        for idx, dist in enumerate(array_req_dist):
-            if idx == 0:  # only put 1 label
-                self.__ax_dist.fill_between([0, SimSetup.tmax], [dist - array_max_eps[idx]] * 2,
-                                            [dist + array_max_eps[idx]] * 2,
-                                            alpha=0.12, color='k', linewidth=0, label='specified distance')
-            else:
-                self.__ax_dist.fill_between([0, SimSetup.tmax], [dist - array_max_eps[idx]] * 2,
-                                            [dist + array_max_eps[idx]] * 2,
-                                            alpha=0.12, color='k', linewidth=0)
+        # for idx, dist in enumerate(array_req_dist):
+        #     if idx == 0:  # only put 1 label
+        #         self.__ax_dist.fill_between([0, SimSetup.tmax], [dist - array_max_eps[idx]] * 2,
+        #                                     [dist + array_max_eps[idx]] * 2,
+        #                                     alpha=0.12, color='k', linewidth=0, label='specified distance')
+        #     else:
+        #         self.__ax_dist.fill_between([0, SimSetup.tmax], [dist - array_max_eps[idx]] * 2,
+        #                                     [dist + array_max_eps[idx]] * 2,
+        #                                     alpha=0.12, color='k', linewidth=0)
         # set y-axis
-        self.__ax_dist.set(ylim=(min(array_req_dist) - max(array_max_eps) - 0.1,
+        self.__ax_dist.set(ylim=(max(min(array_req_dist) - max(array_max_eps) - 0.1, 0.0),
                                  max(array_req_dist) + max(array_max_eps) + 0.1))
         self.__ax_dist.grid(True)
         self.__ax_dist.legend(loc=(0.65, 0.18), prop={'size': 6})
@@ -422,35 +434,44 @@ class SimulationCanvas:
 class ExpSetup():
     exp_defname = 'experiment_result/ROSTB_FormationAvoidance'
     exp_fdata_vis = exp_defname + '_data.pkl'
-    ROS_RATE = 50
+    ROS_RATE = 20
+    LiDAR_RATE = 5
 
 
 class ExperimentEnv():
     def __init__(self):
         # NOTE: ALWAYS DO THIS FIRST
         import_scenario()
-        self.global_poses = [None] * len(ExpSetup.robot_names)
+        self.global_lahead = [None for _ in range(SceneSetup.robot_num)]
+        self.global_poses = [None for _ in range(SceneSetup.robot_num)]
+        # self.scan_LIDAR = [None for _ in range(SceneSetup.robot_num)]
+        self.scan_LIDAR = SceneSetup.default_range_data.copy()
+        # Initiate data_logger
+        self.__cur_time = 0.
+        # self.log = dataLogger( ExpSetup.log_duration * ExpSetup.ROS_RATE )
+        self.log = dataLogger(30000)
 
-    # NOTES: it seems cleaner to do it this way 
+    # NOTES: it seems cleaner to do it this way
     # rather than dynamically creating the callbacks
-    def pos_callback_0(self, data): self.global_poses[0] = data
+    def pos_callback(self, msg, index): self.global_lahead[index] = msg
+    def posc_callback(self, msg, index): self.global_poses[index] = msg
+    def scan_LIDAR_callback(self, msg, index): self.scan_LIDAR[index, :] = np.array(msg.ranges)
 
-    def pos_callback_1(self, data): self.global_poses[1] = data
-
-    def pos_callback_2(self, data): self.global_poses[2] = data
-
-    def pos_callback_3(self, data): self.global_poses[3] = data
-
-    def update_feedback(self, feedback):
+    def update_feedback(self, feedback, control_input):
         all_robots_pos = np.zeros([SceneSetup.robot_num, 3])
         all_robots_theta = np.zeros([SceneSetup.robot_num, 1])
         # TODO: below might not work for robots less than 4
         for i in range(SceneSetup.robot_num):
-            all_robots_pos[i, 0] = self.global_poses[i].x
-            all_robots_pos[i, 1] = self.global_poses[i].y
+            all_robots_pos[i,0] = self.global_poses[i].x
+            all_robots_pos[i,1] = self.global_poses[i].y
             all_robots_theta[i] = self.global_poses[i].theta
         # UPDATE FEEDBACK for the controller
         feedback.set_feedback(all_robots_pos, all_robots_theta)
+
+        eps_array = control_input.get_all_epsilons()
+        feedback.set_all_eps(eps_array)
+        if self.__cur_time % SimSetup.LiDAR_rate < SimSetup.Ts:
+            feedback.set_sensor_reading(self.scan_LIDAR)
 
     def get_i_vlin_omega(self, i, control_input):
         # Inverse Look up ahead Mapping (u_z remain 0.)
@@ -458,25 +479,24 @@ class ExperimentEnv():
         #   omg = (- u_x sin(theta) + u_y cos(theta)) / l
         u = control_input.get_i_vel_xy(i)
         theta = self.global_poses[i].theta
-        vel_lin = u[0] * np.cos(theta) + u[1] * np.sin(theta)
-        vel_ang = (- u[0] * np.sin(theta) + u[1] * np.cos(theta)) / NebolabSetup.TB_L_SI2UNI
+        vel_lin = u[0]*np.cos(theta) + u[1]*np.sin(theta)
+        vel_ang = (- u[0]*np.sin(theta) + u[1]*np.cos(theta))/NebolabSetup.TB_L_SI2UNI
         return vel_lin, vel_ang
 
     def update_log(self, control_input):
         # Store data to log
-        self.log.store_dictionary(control_input.get_all_monitored_info())
-        self.log.time_stamp(self.__cur_time)
+        self.log.store_dictionary( control_input.get_all_monitored_info() )
+        self.log.time_stamp( self.__cur_time )
         # NOT REAL TIME FOR NOW. TODO: fix this with real time if possible
-        self.__cur_time += 1. / ExpSetup.ROS_RATE
+        self.__cur_time += 1./ExpSetup.ROS_RATE
 
     def save_log_data(self):
-        self.log.save_to_pkl(ExpSetup.exp_fdata_log)
-        # TODO: plot data further from saved pickle
+        self.log.save_to_pkl( ExpSetup.exp_fdata_vis )
         # automatic plot if desired
         # if SimSetup.plot_saved_data:
-        #     from scenarios_unicycle.pickleplot import scenario_pkl_plot
-        # Quick fix for now --> TODO: fix this
-        # SimSetup.sim_defname = ExpSetup.exp_defname
-        # SimSetup.sim_fdata_log = ExpSetup.exp_fdata_log
-        # # Plot the pickled data
-        # scenario_pkl_plot()
+        #     from scenarios.Resilient_pickleplot import scenario_pkl_plot
+        #     # Quick fix for now --> TODO: fix this
+        #     SimSetup.sim_defname = ExpSetup.exp_defname
+        #     SimSetup.sim_fdata_log = ExpSetup.exp_fdata_log
+        #     # Plot the pickled data
+        #     scenario_pkl_plot()

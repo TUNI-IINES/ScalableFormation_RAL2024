@@ -1,0 +1,77 @@
+# Order always is Scenario → Control → Setup
+scenario:
+  obstacles:
+    # Each line as an obstacle, closed polygon.
+    # Each array within as a vertex of the obstacle.
+    - [ [ 1.0, 1.0, 0.0 ], [ 4.0, 1.0, 0.0 ], [ 3.0, 0.5, 0.0 ], [ 2.0, 0.5, 0.0 ], [ 1.0, 1.0, 0.0 ] ]
+    - [ [ 1.0, -1.0, 0.0 ], [ 4.0, -1.0, 0.0 ], [ 3.0, -0.5, 0.0 ], [ 2.0, -0.5, 0.0 ], [ 1.0, -1.0, 0.0 ] ]
+    - [ [ 1.5, -3.0, 0 ], [ 2.5, -2.5, 0 ], [ 3.5, -3.0, 0 ], [ 2.5, -3.5, 0 ], [ 1.5, -3.0, 0 ] ]
+  formations:
+    structs:
+      # N robots x 3 coordinate (x, y, z) matrix
+      # Each line as the Cartesian coordinate w.r.t. the its formation center
+      - [ 0.354, 0.354, 0.0 ]
+      - [ -0.354, 0.354, 0.0 ]
+      - [ -0.354, -0.354, 0.0 ]
+      - [ 0.354, -0.354, 0.0 ]
+    links:
+      # Array of N robots x N robots matrix
+      # Each array as an Adjacency matrix of each formation
+      # Positive value indicates the length of the link to each neighbor referring with form_scaling
+      - [ [ 0, 0.707, 1.0, 0.707 ],
+          [ 0.707, 0, 0.707, 0 ],
+          [ 1.0, 0.707, 0, 0.707 ],
+          [ 0.707, 0, 0.707, 0 ] ]
+    # 1xN matrix
+    # Each element as formation's scaling, major and minor lengths of the ellipse
+    form_scaling: [ 1.4142 ]
+    max_form_epsilon:
+      # Each array as an Adjacency matrix of each formation
+      - [ [ 0, 0.2, 1.0, 1.0 ],
+          [ 0.2, 0, 1.0, 0 ],
+          [ 1.0, 1.0, 0, 0.2 ],
+          [ 1.0, 0, 0.2, 0 ] ]
+    major_l: [ 1.0 ]
+    minor_l: [ 1.0 ]
+  positions:
+    initial_positions:
+      # Each line as the initial position[3] & orientation[1] of each formation CENTER
+      # Robot Position (Global) = Rotation Matrix (Orientation) x Structs (Local) x Form Scaling + Center Position (Translation)
+      # Read more: https://community.mrtrix.org/t/registration-transformation-regridding-concepts/3684
+      - [ 0.0, 0.0, 0.0, 0.0 ]
+    waypoints:
+      # Each line as a set of waypoints (position[3] & orientation[1]) of each formation
+      # Each waypoint is defined
+      - [ [ 6.0, 0.0, 0.0, 0.0 ],
+          [ 8.5, -2.0, 0.0, 0.0 ],
+          [ 0.0, -3.0, 0.0, 0.0 ] ]
+    wp_switch_radius: 0.1
+control:
+  features:
+    use_unicycle: true
+    USE_WAYPOINTS: true
+    USECBF_LIDAR: true
+    USECBF_FORMATION: true
+  parameters:
+    d_obs: 0.1
+    speed_limit: 0.15
+    initial_eps: 0.5
+    eps_gain: 0.7
+    eps_weight: 0.1
+    sensor_resolution: 360
+    default_range: 1.0
+    kappa: 0.15
+    gamma_staticObs: 200
+    # This is for the most-outer walls
+    FIELD_X: [ -1.5, 10 ]
+    FIELD_Y: [ -4.5, 1.5 ]
+setup:
+  Ts: 0.02
+  tmax: 120
+  save_animate: false
+  save_data: true
+  plot_saved_data: true
+  timeseries_window: 1
+  eps_visualization: true
+  DETECT_OTHER_ROBOTS: true
+  bound_vertices: 8
