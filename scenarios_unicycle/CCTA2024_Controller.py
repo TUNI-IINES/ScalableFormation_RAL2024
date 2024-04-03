@@ -170,7 +170,7 @@ class Controller:
                     h_fml, h_fmu, h_eps_floor, h_eps_ceil = self.cbf[i].add_maintain_distance_with_distinct_epsilon(
                         current_q, j_q, SceneSetup.form_A[i, j], SceneSetup.max_form_epsilon[i][j], i_eps[j], j_eps[i],
                         j,
-                        gamma=200, power=3)
+                        gamma=20, power=1)
 
                     # store h value
                     computed_control.save_monitored_info(f"h_eps_ceil_{i}_{j}", h_eps_ceil)
@@ -199,18 +199,22 @@ class Controller:
                 computed_control.save_monitored_info(f"h_staticobs_{i}", min_h)
                 computed_control.save_monitored_info(f"lidar_{i}", np.min(range_data))
 
+            cbf_ub_lb = None
             if SceneSetup.speed_limit > 0.:
                 # set speed limit
-                norm = np.hypot(u_nom[0], u_nom[1])
+                # norm = np.hypot(u_nom[0], u_nom[1])
 
-                if norm > SceneSetup.speed_limit:
-                    u_nom = SceneSetup.speed_limit * u_nom / norm  # max
+                # if norm > SceneSetup.speed_limit:
+                #     u_nom = SceneSetup.speed_limit * u_nom / norm  # max
                 # self.cbf[i].add_velocity_bound(SceneSetup.speed_limit)
+                    
+                cbf_ub_lb = SceneSetup.speed_limit
 
             # Ensure safety
             # print(f'Robot {i}')
             u, v = self.cbf[i].compute_safe_controller(u_nom, -SceneSetup.eps_gain * i_eps,
-                                                       weight=SceneSetup.eps_weight)
+                                                       weight=SceneSetup.eps_weight,
+                                                       speed_limit=cbf_ub_lb)
 
             # Store command
             # ------------------------------------------------

@@ -42,7 +42,7 @@ class cbf_si():
             self.constraint_G = np.append(self.constraint_G, G_mat, axis=0)
             self.constraint_h = np.append(self.constraint_h, h_mat, axis=0)
 
-    def compute_safe_controller(self, u_nom, v_nom, P=None, q=None, weight=1.):
+    def compute_safe_controller(self, u_nom, v_nom, P=None, q=None, weight=1., speed_limit = None):
         """
         Compute u_star
 
@@ -62,8 +62,17 @@ class cbf_si():
 
         if self.constraint_G is not None:
             if USE_QPSOLVERS:
+                def_ublb = np.inf
+                lb = np.ones(3 + self.eps_num)*(-def_ublb)
+                ub = np.ones(3 + self.eps_num)*(def_ublb)
+
+                if speed_limit is not None:
+                    array_limit = np.ones(3)* speed_limit
+                    lb[:3], ub[:3] = -array_limit, array_limit
+
                 sol = solve_qp(P, q, self.constraint_G, self.constraint_h,
-                               solver="daqp")
+                            lb = lb, ub = ub,
+                            solver="daqp", verbose=True)
                 #   solver="quadprog")
                 #   solver="proxqp")
 
@@ -247,7 +256,8 @@ class cbf_si():
         # h = norm2( pos - obs )^2 - norm2( min(ds - max_epsilon, min_dist) )^2 ≥ 0
         h_fml = np.power(np.linalg.norm(vect), 2) - np.power((ds - combined_eps), 2)
         vect_l = np.hstack((-2 * vect.reshape((1, 3)), np.zeros((1, self.eps_num))))
-        vect_l[0, idx + 3] = -2 * (combined_eps + ds)
+        vect_l[0, idx + 3] = -2 * (ds - combined_eps)
+        # vect_l[0, idx + 3] = -2 * (combined_eps + ds)
         # -(dh/dpos)^T u < gamma(h)
         self.__set_constraint(vect_l, gamma * np.power(h_fml, power).reshape((1, 1)))
 

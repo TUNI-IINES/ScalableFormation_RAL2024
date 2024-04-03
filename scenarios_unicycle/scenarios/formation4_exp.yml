@@ -31,10 +31,10 @@ scenario:
     form_scaling: [ 0.8 ]
     max_form_epsilon:
       # Each array as an Adjacency matrix of each formation
-      - [ [ 0, 0.07, 1.2, 0.4 ],
-          [ 0.07, 0, 0.4, 0 ],
-          [ 1.2, 0.4, 0, 0.07 ],
-          [ 0.4, 0, 0.07, 0 ] ]
+      - [ [ 0, 0.05, 0.2, 0.2 ],
+          [ 0.05, 0, 0.2, 0 ],
+          [ 0.2, 0.2, 0, 0.05 ],
+          [ 0.2, 0, 0.05, 0 ] ]
     major_l: [ 1.0 ]
     minor_l: [ 1.0 ]
   positions:
@@ -61,21 +61,23 @@ control:
     USECBF_FORMATION: true
   parameters:
     d_obs: 0.18
-    speed_limit: 0.03
-    initial_eps: 0.4
+    speed_limit: 0.1
+    # speed_limit: 0.03
+    initial_eps: 0.05
     eps_gain: 0.8
     eps_weight: 0.1
     sensor_resolution: 360
     default_range: 3.5
     kappa: 0.1
-    gamma_staticObs: 300
+    gamma_staticObs: 1000
     # This is for the most-outer walls
     FIELD_X: [ -2.5, 2.5 ]
     FIELD_Y: [ -1.5, 1.5 ]
 setup:
-  Ts: 0.05
+  Ts: 0.02
   LiDAR_rate: 0.2
-  tmax: 320
+  # tmax: 320
+  tmax: 90
   save_animate: true
   save_data: true
   plot_saved_data: true
