@@ -31,12 +31,21 @@ class waypoint_planner():
 
     # Check whether the position is within switching range
     # return status if wp is changed, wp position, and wp orientation
-    def check_wp_status(self, pos, switch_range=1.):
+    def check_wp_status(self, pos, switch_dist_range=1., th=None, switch_angle_range=np.pi/8):
         is_switch_wp = False
         if self.__current_num < self.__wp_num - 1:
+
             dist = np.linalg.norm(pos - self.__wp[self.__current_num])
-            is_switch_wp = dist < switch_range
-            if is_switch_wp:
+            is_within_dist = dist < switch_dist_range
+
+            is_within_angle = True
+            if th is not None: 
+                angle_diff = th - self.__wp_orient[self.__current_num]
+                angle_diff = (angle_diff + np.pi) % (2*np.pi) - np.pi
+                is_within_angle = np.absolute(angle_diff) < switch_angle_range
+
+            is_switch_wp = is_within_dist and is_within_angle
+            if is_switch_wp: # switch to new wp
                 self.__current_num += 1
 
         return is_switch_wp, self.__wp[self.__current_num], \

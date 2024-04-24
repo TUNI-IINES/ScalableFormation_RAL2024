@@ -1,21 +1,43 @@
-from nebolab_experiment_setup import NebolabSetup
-from scenarios_unicycle.CCTA2024_Controller import SceneSetup, np
-
+import os
 import matplotlib.pyplot as plt
 from datetime import datetime
 from matplotlib.gridspec import GridSpec
-from simulator.dynamics import Unicycle
-from simulator.plot_2D_unicycle import draw2DUnicyle
-from simulator.data_logger import dataLogger
-from simulator.detect_obstacle import DetectObstacle
+
+PYSIM = True
+# PYSIM = False # for experiment or running via ROS
+
+if PYSIM:
+    from nebolab_experiment_setup import NebolabSetup
+    from scenarios_unicycle.CCTA2024_Controller import SceneSetup, np
+    from simulator.dynamics import Unicycle
+    from simulator.plot_2D_unicycle import draw2DUnicyle
+    from simulator.data_logger import dataLogger
+    from simulator.detect_obstacle import DetectObstacle
+
+    SRC = "scenarios_unicycle/scenarios/"
+
+else:
+    from ..nebolab_experiment_setup import NebolabSetup
+    from ..scenarios_unicycle.CCTA2024_Controller import SceneSetup, np
+    from ..simulator.dynamics import Unicycle
+    from ..simulator.plot_2D_unicycle import draw2DUnicyle
+    from ..simulator.data_logger import dataLogger
+    from ..simulator.detect_obstacle import DetectObstacle
+
+    # change it when run in nebolab
+    SRC = "/home/localadmin/ros2_ws/src/ccta2024_scalable/ccta2024_scalable/scenarios_unicycle/scenarios/"
 
 
+
+# YAML_FILE = 'formation4_mixed'
+YAML_FILE = "formation4_exp"
+# YAML_FILE = os.environ['YAML_NAME']
 # TODO: setup PEP for the variable naming, formatting, etc.
 
 # GENERAL PARAM AND COMPUTATION FOR THIS SPECIFIC SCENARIO (Both SIM and EXP)
 # -----------------------------------------------------------------------
 
-def import_scenario(filename="formation4_exp", directory="scenarios_unicycle/scenarios/"):
+def import_scenario(filename=YAML_FILE, directory=SRC):
     with open(f'{directory}{filename}.yml', 'r') as file:
         import yaml
         scenario, control, setup = yaml.safe_load(file).values()
@@ -27,7 +49,7 @@ def import_scenario(filename="formation4_exp", directory="scenarios_unicycle/sce
     [exec(f'SceneSetup.{k} = {v}') for data in control.values() for k, v in data.items()]
     SceneSetup.robot_num = len(scenario['formations']['structs'])
     # TODO: this should not be like this
-    SceneSetup.robot_color = [f'{np.random.random():.3f}' for _ in range(SceneSetup.robot_num)]
+    # SceneSetup.robot_color = [f'{np.random.random():.3f}' for _ in range(SceneSetup.robot_num)]
     SceneSetup.default_range_data = np.ones((SceneSetup.robot_num,
                                              SceneSetup.sensor_resolution)) * SceneSetup.default_range
 
@@ -432,10 +454,12 @@ class SimulationCanvas:
 # ONLY USED IN EXPERIMENT
 # -----------------------------------------------------------------------
 class ExpSetup():
-    exp_defname = 'experiment_result/ROSTB_FormationAvoidance'
+    exp_defname = 'ROSTB_FormationScalable'
     exp_fdata_vis = exp_defname + '_data.pkl'
-    ROS_RATE = 20
+    ROS_RATE = 50
     LiDAR_RATE = 5
+    log_duration = 300
+    ROS_NODE_NAME = 'CCTA_FormationAvoidance'
 
 
 class ExperimentEnv():
@@ -448,8 +472,7 @@ class ExperimentEnv():
         self.scan_LIDAR = SceneSetup.default_range_data.copy()
         # Initiate data_logger
         self.__cur_time = 0.
-        # self.log = dataLogger( ExpSetup.log_duration * ExpSetup.ROS_RATE )
-        self.log = dataLogger(30000)
+        self.log = dataLogger( ExpSetup.log_duration * ExpSetup.ROS_RATE )
 
     # NOTES: it seems cleaner to do it this way
     # rather than dynamically creating the callbacks

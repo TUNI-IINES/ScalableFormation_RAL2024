@@ -163,3 +163,5 @@ scenarios_unicycle/scenarios/output.txt
 scenarios_unicycle/CCTA2024_Controller_2.py
 control_lib/cbf_single_integrator_2.py
 scenarios_unicycle/CCTA2024_FormationObstacleLidar_scenario_2.py
+/all_experiment_result
+*.avi

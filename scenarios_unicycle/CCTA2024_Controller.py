@@ -1,7 +1,16 @@
-from control_lib.go_to_goal import Pcontrol, waypoint_planner
-from control_lib.cbf_single_integrator import cbf_si, np
-from nebolab_experiment_setup import NebolabSetup
+import numpy as np
 
+PYSIM = True
+# PYSIM = False # for experiment or running via ROS
+
+if PYSIM:
+    from control_lib.go_to_goal import Pcontrol, waypoint_planner
+    from control_lib.cbf_single_integrator import cbf_si
+    from nebolab_experiment_setup import NebolabSetup
+else: 
+    from ..control_lib.go_to_goal import Pcontrol, waypoint_planner
+    from ..control_lib.cbf_single_integrator import cbf_si
+    from ..nebolab_experiment_setup import NebolabSetup
 
 # MAIN COMPUTATION FOR CCTA2022 - This code should be general for all scenarios
 # ------------------------------------------------------------------------------
@@ -90,7 +99,7 @@ class Controller:
         # Re-estimate in_neighbor, for now assume formation graph is identical with communication graph
         self.__inNeigh = [np.where(SceneSetup.form_A[:, i] > 0)[0] for i in range(SceneSetup.robot_num)]
         # Setup cbf
-        self.cbf = [cbf_si(neighbor_eps=SceneSetup.form_A_eps[i]) for i in range(SceneSetup.robot_num)]
+        self.cbf = [cbf_si(i, own_eps_ij=SceneSetup.form_A_eps[i]) for i in range(SceneSetup.robot_num)]
 
         if SceneSetup.USE_WAYPOINTS:
             # Setup Waypoint manager
@@ -120,12 +129,13 @@ class Controller:
                 form_pos, form_th = feedback.get_form_i_state(f_id)  # get centroid
                 # Recheck waypoint
                 is_update, new_wp, new_orient = \
-                    self.wp_manager[f_id].check_wp_status(form_pos, SceneSetup.wp_switch_radius)
+                    self.wp_manager[f_id].check_wp_status(form_pos, SceneSetup.wp_switch_radius, form_th, np.pi/90)
                 if is_update:  # update new goal position for each robot
                     # SceneSetup.form_waypoints.pop(0)
                     for idx in range(SceneSetup.robot_num):
                         if f_id == SceneSetup.form_id[idx]:
                             SceneSetup.goal_pos[idx, :] = new_wp + rot(new_orient) @ SceneSetup.struct[idx]
+
 
         for i in range(SceneSetup.robot_num):
             # Collect States
@@ -163,14 +173,27 @@ class Controller:
             if SceneSetup.USECBF_FORMATION:
                 for j in self.__inNeigh[i]:
                     j_q = feedback.get_robot_i_pos(j)
-                    j_eps = feedback.get_robot_i_eps(j)
                     if SceneSetup.use_unicycle:
                         j_q = feedback.get_lahead_i_pos(j)
+
+                    j_eps = feedback.get_robot_i_eps(j)
 
                     h_fml, h_fmu, h_eps_floor, h_eps_ceil = self.cbf[i].add_maintain_distance_with_distinct_epsilon(
                         current_q, j_q, SceneSetup.form_A[i, j], SceneSetup.max_form_epsilon[i][j], i_eps[j], j_eps[i],
                         j,
-                        gamma=20, power=1)
+                        gamma_fm=20, power_fm=1,
+                        gamma_eps=20, power_eps=1 )
+
+                    # fm, em = self.cbf[i].add_maintain_flexible_distance(
+                    #     current_q, j_q, SceneSetup.form_A[i, j], SceneSetup.max_form_epsilon[i][j], i_eps[j], j_eps[i],
+                    #     j,
+                    #     gamma=20, power=1)
+
+                    # h_eps_ceil = fm
+                    # h_eps_floor = fm
+                    # h_fml = em
+                    # h_fmu = em
+
 
                     # store h value
                     computed_control.save_monitored_info(f"h_eps_ceil_{i}_{j}", h_eps_ceil)
@@ -181,11 +204,12 @@ class Controller:
             # Non-circular Robot-Obstacle Avoidance
             if SceneSetup.USECBF_LIDAR:
                 # Get the LIDAR data
-                # range_data = feedback.get_robot_i_range_data(i)  # [(0 → 1)]
+                range_data = feedback.get_robot_i_range_data(i)  # [(0 → 1)]
                 # print(range_data)
                 range_points = feedback.get_robot_i_detected_pos(i)  # [(obs_x, obs_y, 0)]
-                range_data = np.array([np.linalg.norm(current_q - point, 2) for point in range_points])
-                detected_obs_points = range_points[(range_data < 0.99 * SceneSetup.default_range) & (range_data > 0.05)]  # filtered
+                # range_data = np.array([np.linalg.norm(current_q - point, 2) for point in range_points])
+                # detected_obs_points = range_points[(range_data < 0.99 * SceneSetup.default_range) & (range_data > 0.05)]  # filtered
+                detected_obs_points = range_points[(range_data < 0.99 * SceneSetup.default_range)]  # filtered
 
                 # if i == 0: print(i, range_points[0])
 
@@ -216,21 +240,30 @@ class Controller:
                                                        weight=SceneSetup.eps_weight,
                                                        speed_limit=cbf_ub_lb)
 
+            # print(i, u, v)
+            # check_val = self.cbf[i].constraint_G@np.hstack([u, v])
+            # print(i, check_val, self.cbf[i].constraint_h[:, 0])
+
             # Store command
             # ------------------------------------------------
             computed_control.set_i_vel_xy(i, u[:2])
-
-            self.cbf[i].update_additional_state((Ts := 0.02))
-            i_eps = self.cbf[i].get_additional_state()
-            for idx, eps in enumerate(i_eps.tolist()):
-                computed_control.save_monitored_info(f"eps_{i}_{idx}", eps)
-            computed_control.set_i_eps(i, i_eps)
 
             # Save u_nom and u* to pkl
             computed_control.save_monitored_info(f"u_nom_x_{i}", u_nom[0])
             computed_control.save_monitored_info(f"u_nom_y_{i}", u_nom[1])
             computed_control.save_monitored_info(f"u_x_{i}", u[0])
             computed_control.save_monitored_info(f"u_y_{i}", u[1])
+
+        # Separate the update so all values finished calculated first
+        for i in range(SceneSetup.robot_num):
+
+            self.cbf[i].update_additional_state((Ts := 0.02))
+
+            i_eps = self.cbf[i].get_additional_state()
+            for idx, eps in enumerate(i_eps.tolist()):
+                computed_control.save_monitored_info(f"eps_{i}_{idx}", eps)
+            computed_control.set_i_eps(i, i_eps)
+
 
 
 class ControlOutput:
@@ -372,7 +405,7 @@ class FeedbackInformation:
         cent = np.sum(form_robots_pos, 0) / form_robots_pos.shape[0]
         # Compute vector for each ellipse's theta
         vector = leader_pos - cent  # robot 0 is leader group 1
-        theta = np.arctan2(vector[1], vector[0]) + leader_offset_rad  # no offset for now
+        theta = np.arctan2(vector[1], vector[0]) - leader_offset_rad  
         return cent, theta
 
     def set_feedback(self, all_robots_pos, all_robots_theta, all_robots_eps=None):

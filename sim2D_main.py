@@ -42,8 +42,8 @@ def main():
                                   save_count=round(SimSetup.tmax / SimSetup.Ts) + 1, interval=SimSetup.Ts * 1000)
     if SimSetup.save_animate:  # default not showing animation
         print('saving animation ...')
-        # ani.save(SimSetup.sim_fname_output, writer='pillow', fps=round(1 / SimSetup.Ts))
-        ani.save(SimSetup.sim_fname_output, writer='pillow', fps=5)
+        ani.save(SimSetup.sim_fname_output, writer='pillow', fps=round(1 / SimSetup.Ts))
+        # ani.save(SimSetup.sim_fname_output, writer='pillow', fps=5)
     else:
         plt.show()
 
