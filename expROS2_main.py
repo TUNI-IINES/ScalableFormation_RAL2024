@@ -9,8 +9,8 @@ from sensor_msgs.msg import LaserScan
 
 from functools import partial
 
-from scenarios_unicycle.CCTA2024_Controller import FeedbackInformation, Controller, ControlOutput, SceneSetup
-from scenarios_unicycle.CCTA2024_FormationObstacleLidar_scenario import ExpSetup, ExperimentEnv
+from .scenarios_unicycle.CCTA2024_Controller import FeedbackInformation, Controller, ControlOutput, SceneSetup
+from .scenarios_unicycle.CCTA2024_FormationObstacleLidar_scenario import ExpSetup, ExperimentEnv
 
 
 # from scenarios_unicycle.sim2D_basic_scene import FeedbackInformation, Controller, ControlOutput, SceneSetup, ExpSetup, ExperimentEnv
@@ -19,6 +19,12 @@ from scenarios_unicycle.CCTA2024_FormationObstacleLidar_scenario import ExpSetup
 # from scenarios_unicycle.Resilient_scenario import FeedbackInformation, Controller, ControlOutput, SceneSetup, ExpSetup, ExperimentEnv
 
 # TODO: think of a better way to do this with less than 4 robot
+
+# # SERVICE:
+# from std_srvs.srv import SetBool
+
+# ros2 service call /set_recording std_srvs/srv/SetBool "data: True"
+# ros2 service call /set_recording std_srvs/srv/SetBool "data: False"
 
 class Computation(Node):
     def __init__(self, ROS_NODE_NAME):
@@ -56,17 +62,32 @@ class Computation(Node):
                                                     qos_profile=qos_profile_sensor_data,
                                                     callback_group=self.sensor_cb_group)
 
-            # Create LiDAR subscribers
-            self.get_logger().info(f'Creating LiDAR data subscriber: /{tb_name}/scan')
+            # # Create LiDAR subscribers
+            # self.get_logger().info(f'Creating LiDAR data subscriber: /{tb_name}/scan')
+            # self.create_subscription(LaserScan,
+            #                          f'/{tb_name}/scan',
+            #                          partial(self.environment.scan_LIDAR_callback, index=robot_index),
+            #                          qos_profile=qos_profile_sensor_data,
+            #                          callback_group=self.sensor_cb_group)
+
+            # Create LiDAR filtered subscribers
+            self.get_logger().info(f'Creating LiDAR data subscriber: /{tb_name}/scan_filtered')
             self.create_subscription(LaserScan,
-                                     f'/{tb_name}/scan',
-                                     partial(self.environment.scan_LIDAR_callback, index=robot_index),
-                                     qos_profile=qos_profile_sensor_data,
-                                     callback_group=self.sensor_cb_group)
+                        f'/{tb_name}/scan_filtered',
+                        partial(self.environment.scan_LIDAR_callback, index=robot_index),
+                        qos_profile=qos_profile_sensor_data,
+                        callback_group=self.sensor_cb_group)
+
 
             # create cmd_vel publisher
             self.get_logger().info(f'Creating cmd_vel publisher: /{tb_name}/cmd_vel')
             self.ros_pubs[tb_name] = self.create_publisher(Twist, '/{}/cmd_vel'.format(tb_name), 1)
+
+
+        # # SERVICE FOR RECORDING:
+        # self.cli = self.create_client(SetBool, 'set_recording')
+        # self.req = SetBool.Request()
+        # self.send_request(True)
 
         # Add handler if CTRL+C is pressed --> then save data to pickle
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -77,6 +98,12 @@ class Computation(Node):
                                                   callback_group=self.timer_cb_group)
         self.it = 0
         self.check_t = self.time()
+
+    # SERVICE FOR RECORDING:
+    def send_request(self, state):
+        self.get_logger().info(f"Sending request to set_recording with state: {state}")
+        self.req.data = state
+        self.future = self.cli.call_async(self.req)
 
     def time(self):
         """Returns the current time in seconds."""
@@ -140,7 +167,12 @@ class Computation(Node):
         #         pickle.dump(dict(data_log=self.data_log), f)
         #     print('Done.')
 
+        # # STOP RECORDING
+        # self.send_request(False)
+
         # Stop all robots at the end
+        for i in range(SceneSetup.robot_num):
+            self.ros_pubs[f"tb3_{i}"].publish( self.si_to_TBTwist(0., 0.) )
 
         self.stop = True
 
